@@ -64,6 +64,16 @@ scripts/start-server.sh --project-dir /path/to/project
 ```
 When calling this via the Bash tool, set `run_in_background: true`. Then read `$STATE_DIR/server-info` on the next turn to get the URL and port.
 
+**VS Code:**
+```bash
+# Use run_in_terminal with mode=async. VS Code supports foreground terminal access:
+# get_terminal_output works with any terminal visible in the terminal panel via terminalId.
+scripts/start-server.sh --project-dir /path/to/project
+```
+Use `run_in_terminal` with `mode=async`. The terminal ID returned can be passed to `get_terminal_output` to read server startup JSON directly. If the server is running in a user-created foreground terminal, use `get_terminal_output` with `terminalId` (the numeric instance ID visible in the terminal panel) instead of the async `id`.
+
+For interactive input during brainstorming questions, prefer `vscode_askQuestions` — it surfaces a question carousel with a **Focus Terminal** button, letting the user answer directly in the terminal if preferred. When the agent sends answers via `send_to_terminal`, VS Code shows a progress message indicating which question is being answered.
+
 **Codex:**
 ```bash
 # Codex reaps background processes. The script auto-detects CODEX_CI and

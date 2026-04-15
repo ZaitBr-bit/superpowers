@@ -77,6 +77,8 @@ digraph brainstorming {
 - Only one question per message - if a topic needs more exploration, break it into multiple questions
 - Focus on understanding: purpose, constraints, success criteria
 
+**In VS Code — MANDATORY:** ALL clarifying questions MUST be asked via `vscode_askQuestions`, never inline in the chat. This applies to every question, including follow-up questions based on previous answers. After receiving answers, call `vscode_askQuestions` again for the next question — never post a question in chat and stop to wait. The only time you write text in the chat is to present findings, designs, or options — not to ask questions.
+
 **Exploring approaches:**
 
 - Propose 2-3 different approaches with trade-offs
