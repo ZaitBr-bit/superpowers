@@ -43,6 +43,10 @@ Use for ANY technical issue:
 - You're in a hurry (rushing guarantees rework)
 - Manager wants it fixed NOW (systematic is faster than thrashing)
 
+## Asking Questions in VS Code
+
+**In VS Code — MANDATORY:** Quando precisar fazer perguntas ao usuário para coletar informações durante a investigação (por exemplo, para reproduzir o bug, entender o contexto, ou clarificar comportamento esperado), use `vscode_askQuestions` — NUNCA escreva perguntas inline no chat. Isso inclui perguntas de acompanhamento baseadas em respostas anteriores. Após receber uma resposta, chame `vscode_askQuestions` novamente para a próxima pergunta. O único momento em que você escreve texto no chat é para apresentar descobertas, hipóteses, análises ou resultados — nunca para fazer perguntas.
+
 ## The Four Phases
 
 You MUST complete each phase before proceeding to the next.

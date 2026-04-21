@@ -231,6 +231,10 @@ Done!
 - Review loops add iterations
 - But catches issues early (cheaper than debugging later)
 
+## Asking Questions in VS Code
+
+**In VS Code — MANDATORY:** Quando precisar fazer perguntas ao usuário (por exemplo, para esclarecer contexto antes de despachar um subagente, ou para responder a um `NEEDS_CONTEXT` do implementador), use `vscode_askQuestions` — NUNCA escreva perguntas inline no chat. Isso inclui perguntas de acompanhamento baseadas em respostas anteriores. Após receber uma resposta, chame `vscode_askQuestions` novamente para a próxima pergunta. O único momento em que você escreve texto no chat é para apresentar descobertas, status de tarefas, ou resultados — nunca para fazer perguntas.
+
 ## Red Flags
 
 **Never:**

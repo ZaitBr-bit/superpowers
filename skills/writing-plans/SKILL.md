@@ -124,13 +124,19 @@ If you find issues, fix them inline. No need to re-review — just fix and move 
 
 After saving the plan, offer execution choice:
 
-**"Plan complete and saved to `docs/superpowers/plans/<filename>.md`. Two execution options:**
+**In VS Code — MANDATORY:** The execution choice MUST be asked via `vscode_askQuestions`, never inline in the chat. Never post the question as text and stop to wait — always use the tool.
 
-**1. Subagent-Driven (recommended)** - I dispatch a fresh subagent per task, review between tasks, fast iteration
-
-**2. Inline Execution** - Execute tasks in this session using executing-plans, batch execution with checkpoints
-
-**Which approach?"**
+Example `vscode_askQuestions` call:
+```
+header: "Execution approach"
+question: "Plan complete and saved to docs/superpowers/plans/<filename>.md. Which execution approach do you prefer?"
+options:
+  - label: "Subagent-Driven (recommended)"
+    description: "Dispatch a fresh subagent per task, review between tasks, fast iteration"
+    recommended: true
+  - label: "Inline Execution"
+    description: "Execute tasks in this session using executing-plans, batch execution with checkpoints"
+```
 
 **If Subagent-Driven chosen:**
 - **REQUIRED SUB-SKILL:** Use superpowers:subagent-driven-development

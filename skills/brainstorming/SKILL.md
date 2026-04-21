@@ -126,15 +126,26 @@ After writing the spec document, look at it with fresh eyes:
 Fix any issues inline. No need to re-review — just fix and move on.
 
 **User Review Gate:**
-After the spec review loop passes, ask the user to review the written spec before proceeding:
 
-> "Spec written and committed to `<path>`. Please review it and let me know if you want to make any changes before we start writing out the implementation plan."
+**In VS Code — MANDATORY:** Ask for spec approval via `vscode_askQuestions`. NEVER post this as a chat message and wait. Use the tool every time, including after changes.
 
-Wait for the user's response. If they request changes, make them and re-run the spec review loop. Only proceed once the user approves.
+Example `vscode_askQuestions` call:
+```
+header: "Spec review"
+question: "Spec written and saved to <path>. Review it and let me know — do you want to proceed to the implementation plan or make changes first?"
+options:
+  - label: "Proceed to implementation plan"
+    description: "Invoke writing-plans to create the step-by-step implementation plan"
+    recommended: true
+  - label: "I have changes"
+    description: "Describe changes in the freeform field below"
+```
+
+If they request changes, make them, re-run the spec self-review, then ask again via `vscode_askQuestions`. Only proceed once the user approves.
 
 **Implementation:**
 
-- Invoke the writing-plans skill to create a detailed implementation plan
+- **REQUIRED SUB-SKILL:** Use superpowers:writing-plans to create a detailed implementation plan
 - Do NOT invoke any other skill. writing-plans is the next step.
 
 ## Key Principles
