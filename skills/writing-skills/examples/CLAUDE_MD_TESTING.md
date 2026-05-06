@@ -183,7 +183,7 @@ For each variant:
 
 1. Create subagent test harness
 2. Run NULL baseline on all 4 scenarios
-3. Test each variant on same scenarios
+3. Validate each variant on same scenarios
 4. Compare compliance rates
 5. Identify which rationalizations break through
 6. Iterate on winning variant to close holes

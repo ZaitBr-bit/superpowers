@@ -7,17 +7,17 @@ description: Use when creating new skills, editing existing skills, or verifying
 
 ## Overview
 
-**Writing skills IS Test-Driven Development applied to process documentation.**
+**Writing skills is evidence-driven development applied to process documentation.**
 
 **Personal skills live in agent-specific directories (`~/.claude/skills` for Claude Code, `~/.agents/skills/` for Codex)** 
 
-You write test cases (pressure scenarios with subagents), watch them fail (baseline behavior), write the skill (documentation), watch tests pass (agents comply), and refactor (close loopholes).
+You run pressure scenarios (with subagents) to establish baseline behavior, write the skill (documentation), validate improved compliance, and refine to close loopholes.
 
-**Core principle:** If you didn't watch an agent fail without the skill, you don't know if the skill teaches the right thing.
+**Core principle:** If you didn't validate baseline behavior without the skill, you don't know if the skill teaches the right thing.
 
-**REQUIRED BACKGROUND:** You MUST understand superpowers:test-driven-development before using this skill. That skill defines the fundamental RED-GREEN-REFACTOR cycle. This skill adapts TDD to documentation.
+**REQUIRED BACKGROUND:** You MUST understand superpowers:test-driven-development before using this skill. That skill defines lightweight validation and iterative refinement. This skill adapts those principles to documentation.
 
-**Official guidance:** For Anthropic's official skill authoring best practices, see anthropic-best-practices.md. This document provides additional patterns and guidelines that complement the TDD-focused approach in this skill.
+**Official guidance:** For Anthropic's official skill authoring best practices, see anthropic-best-practices.md. This document provides additional patterns and guidelines that complement the evidence-focused approach in this skill.
 
 ## What is a Skill?
 
@@ -27,22 +27,22 @@ A **skill** is a reference guide for proven techniques, patterns, or tools. Skil
 
 **Skills are NOT:** Narratives about how you solved a problem once
 
-## TDD Mapping for Skills
+## Validation Mapping for Skills
 
-| TDD Concept | Skill Creation |
+| Validation Concept | Skill Creation |
 |-------------|----------------|
-| **Test case** | Pressure scenario with subagent |
+| **Validation scenario** | Pressure scenario with subagent |
 | **Production code** | Skill document (SKILL.md) |
-| **Test fails (RED)** | Agent violates rule without skill (baseline) |
-| **Test passes (GREEN)** | Agent complies with skill present |
+| **Baseline reveals gap** | Agent violates rule without skill |
+| **Validation improves outcome** | Agent complies with skill present |
 | **Refactor** | Close loopholes while maintaining compliance |
-| **Write test first** | Run baseline scenario BEFORE writing skill |
-| **Watch it fail** | Document exact rationalizations agent uses |
-| **Minimal code** | Write skill addressing those specific violations |
-| **Watch it pass** | Verify agent now complies |
+| **Validate baseline first** | Run baseline scenario BEFORE writing skill |
+| **Capture evidence** | Document exact rationalizations agent uses |
+| **Minimal change** | Write skill addressing those specific violations |
+| **Re-validate** | Verify agent now complies |
 | **Refactor cycle** | Find new rationalizations → plug → re-verify |
 
-The entire skill creation process follows RED-GREEN-REFACTOR.
+The entire skill creation process follows baseline → implementation → refinement.
 
 ## When to Create a Skill
 
@@ -162,13 +162,13 @@ When the description was changed to just "Use when executing implementation plan
 description: Use when executing plans - dispatches subagent per task with code review between tasks
 
 # ❌ BAD: Too much process detail
-description: Use for TDD - write test first, watch it fail, write minimal code, refactor
+description: Use for validation workflow - run baseline scenarios, implement, re-validate, refactor
 
 # ✅ GOOD: Just triggering conditions, no workflow summary
 description: Use when executing implementation plans with independent tasks in the current session
 
 # ✅ GOOD: Triggering conditions only
-description: Use when implementing any feature or bugfix, before writing implementation code
+description: Use when creating or updating skills that need behavior validation under realistic pressure
 ```
 
 **Content:**
@@ -184,13 +184,13 @@ description: Use when implementing any feature or bugfix, before writing impleme
 description: For async testing
 
 # ❌ BAD: First person
-description: I can help you with async tests when they're flaky
+description: I can help you with flaky validation scenarios
 
 # ❌ BAD: Mentions technology but skill isn't specific to it
-description: Use when tests use setTimeout/sleep and are flaky
+description: Use when validation relies on setTimeout/sleep and is flaky
 
 # ✅ GOOD: Starts with "Use when", describes problem, no workflow
-description: Use when tests have race conditions, timing dependencies, or pass/fail inconsistently
+description: Use when validation has race conditions, timing dependencies, or inconsistent outcomes
 
 # ✅ GOOD: Technology-specific skill with explicit trigger
 description: Use when using React Router and handling authentication redirects
@@ -374,33 +374,33 @@ When: Reference material too large for inline
 ## The Iron Law (Same as TDD)
 
 ```
-NO SKILL WITHOUT A FAILING TEST FIRST
+NO SKILL WITHOUT BASELINE EVIDENCE FIRST
 ```
 
 This applies to NEW skills AND EDITS to existing skills.
 
-Write skill before testing? Delete it. Start over.
-Edit skill without testing? Same violation.
+Write skill before baseline validation? Pause and gather evidence first.
+Edit skill without validation? Same violation.
 
 **No exceptions:**
 - Not for "simple additions"
 - Not for "just adding a section"
 - Not for "documentation updates"
-- Don't keep untested changes as "reference"
-- Don't "adapt" while running tests
-- Delete means delete
+- Don't keep unvalidated changes as "reference"
+- Don't "adapt" while collecting evidence
+- Baseline first, always
 
 **REQUIRED BACKGROUND:** The superpowers:test-driven-development skill explains why this matters. Same principles apply to documentation.
 
-## Testing All Skill Types
+## Validating All Skill Types
 
-Different skill types need different test approaches:
+Different skill types need different validation approaches:
 
 ### Discipline-Enforcing Skills (rules/requirements)
 
 **Examples:** TDD, verification-before-completion, designing-before-coding
 
-**Test with:**
+**Validate with:**
 - Academic questions: Do they understand the rules?
 - Pressure scenarios: Do they comply under stress?
 - Multiple pressures combined: time + sunk cost + exhaustion
@@ -412,7 +412,7 @@ Different skill types need different test approaches:
 
 **Examples:** condition-based-waiting, root-cause-tracing, defensive-programming
 
-**Test with:**
+**Validate with:**
 - Application scenarios: Can they apply the technique correctly?
 - Variation scenarios: Do they handle edge cases?
 - Missing information tests: Do instructions have gaps?
@@ -423,7 +423,7 @@ Different skill types need different test approaches:
 
 **Examples:** reducing-complexity, information-hiding concepts
 
-**Test with:**
+**Validate with:**
 - Recognition scenarios: Do they recognize when pattern applies?
 - Application scenarios: Can they use the mental model?
 - Counter-examples: Do they know when NOT to apply?
@@ -434,27 +434,27 @@ Different skill types need different test approaches:
 
 **Examples:** API documentation, command references, library guides
 
-**Test with:**
+**Validate with:**
 - Retrieval scenarios: Can they find the right information?
 - Application scenarios: Can they use what they found correctly?
 - Gap testing: Are common use cases covered?
 
 **Success criteria:** Agent finds and correctly applies reference information
 
-## Common Rationalizations for Skipping Testing
+## Common Rationalizations for Skipping Validation
 
 | Excuse | Reality |
 |--------|---------|
-| "Skill is obviously clear" | Clear to you ≠ clear to other agents. Test it. |
-| "It's just a reference" | References can have gaps, unclear sections. Test retrieval. |
-| "Testing is overkill" | Untested skills have issues. Always. 15 min testing saves hours. |
-| "I'll test if problems emerge" | Problems = agents can't use skill. Test BEFORE deploying. |
-| "Too tedious to test" | Testing is less tedious than debugging bad skill in production. |
-| "I'm confident it's good" | Overconfidence guarantees issues. Test anyway. |
-| "Academic review is enough" | Reading ≠ using. Test application scenarios. |
-| "No time to test" | Deploying untested skill wastes more time fixing it later. |
+| "Skill is obviously clear" | Clear to you ≠ clear to other agents. Validate it. |
+| "It's just a reference" | References can have gaps, unclear sections. Validate retrieval. |
+| "Validation is overkill" | Unvalidated skills have issues. Always. 15 min validation saves hours. |
+| "I'll validate if problems emerge" | Problems = agents can't use skill. Validate BEFORE deploying. |
+| "Too tedious to validate" | Validation is less tedious than debugging bad skill in production. |
+| "I'm confident it's good" | Overconfidence guarantees issues. Validate anyway. |
+| "Academic review is enough" | Reading ≠ using. Validate application scenarios. |
+| "No time to validate" | Deploying unvalidated skill wastes more time fixing it later. |
 
-**All of these mean: Test before deploying. No exceptions.**
+**All of these mean: Validate before deploying. No exceptions.**
 
 ## Bulletproofing Skills Against Rationalization
 
@@ -501,9 +501,9 @@ Capture rationalizations from baseline testing (see Testing section below). Ever
 ```markdown
 | Excuse | Reality |
 |--------|---------|
-| "Too simple to test" | Simple code breaks. Test takes 30 seconds. |
-| "I'll test after" | Tests passing immediately prove nothing. |
-| "Tests after achieve same goals" | Tests-after = "what does this do?" Tests-first = "what should this do?" |
+| "Too simple to validate" | Simple changes still break behavior. Validate quickly. |
+| "I'll validate after" | Validation done only at the end hides early mistakes. |
+| "Manual glance is enough" | Observation alone misses edge cases. Use focused checks. |
 ```
 
 ### Create Red Flags List
@@ -530,30 +530,30 @@ Add to description: symptoms of when you're ABOUT to violate the rule:
 description: use when implementing any feature or bugfix, before writing implementation code
 ```
 
-## RED-GREEN-REFACTOR for Skills
+## Baseline-Iterate-Refine Loop for Skills
 
-Follow the TDD cycle:
+Follow the evidence cycle:
 
-### RED: Write Failing Test (Baseline)
+### Baseline: Capture Current Behavior
 
 Run pressure scenario with subagent WITHOUT the skill. Document exact behavior:
 - What choices did they make?
 - What rationalizations did they use (verbatim)?
 - Which pressures triggered violations?
 
-This is "watch the test fail" - you must see what agents naturally do before writing the skill.
+This is baseline evidence - you must see what agents naturally do before writing the skill.
 
-### GREEN: Write Minimal Skill
+### Iterate: Write Minimal Skill
 
 Write skill that addresses those specific rationalizations. Don't add extra content for hypothetical cases.
 
 Run same scenarios WITH skill. Agent should now comply.
 
-### REFACTOR: Close Loopholes
+### Refine: Close Loopholes
 
 Agent found new rationalization? Add explicit counter. Re-test until bulletproof.
 
-**Testing methodology:** See @testing-skills-with-subagents.md for the complete testing methodology:
+**Validation methodology:** See @testing-skills-with-subagents.md for the complete methodology:
 - How to write pressure scenarios
 - Pressure types (time, sunk cost, authority, exhaustion)
 - Plugging holes systematically
@@ -591,18 +591,18 @@ helper1, helper2, step3, pattern4
 
 **The deployment checklist below is MANDATORY for EACH skill.**
 
-Deploying untested skills = deploying untested code. It's a violation of quality standards.
+Deploying unvalidated skills = deploying unclear guidance. It's a violation of quality standards.
 
-## Skill Creation Checklist (TDD Adapted)
+## Skill Creation Checklist (Validation Adapted)
 
 **IMPORTANT: Use TodoWrite to create todos for EACH checklist item below.**
 
-**RED Phase - Write Failing Test:**
+**Baseline Phase - Capture Evidence:**
 - [ ] Create pressure scenarios (3+ combined pressures for discipline skills)
 - [ ] Run scenarios WITHOUT skill - document baseline behavior verbatim
 - [ ] Identify patterns in rationalizations/failures
 
-**GREEN Phase - Write Minimal Skill:**
+**Implementation Phase - Write Minimal Skill:**
 - [ ] Name uses only letters, numbers, hyphens (no parentheses/special chars)
 - [ ] YAML frontmatter with required `name` and `description` fields (max 1024 chars; see [spec](https://agentskills.io/specification))
 - [ ] Description starts with "Use when..." and includes specific triggers/symptoms
@@ -614,7 +614,7 @@ Deploying untested skills = deploying untested code. It's a violation of quality
 - [ ] One excellent example (not multi-language)
 - [ ] Run scenarios WITH skill - verify agents now comply
 
-**REFACTOR Phase - Close Loopholes:**
+**Refinement Phase - Close Loopholes:**
 - [ ] Identify NEW rationalizations from testing
 - [ ] Add explicit counters (if discipline skill)
 - [ ] Build rationalization table from all test iterations
@@ -646,10 +646,10 @@ How future Claude finds your skill:
 
 ## The Bottom Line
 
-**Creating skills IS TDD for process documentation.**
+**Creating skills is evidence-driven documentation engineering.**
 
-Same Iron Law: No skill without failing test first.
-Same cycle: RED (baseline) → GREEN (write skill) → REFACTOR (close loopholes).
+Same Iron Law: No skill without baseline evidence first.
+Same cycle: Baseline (observe) → Implement (write skill) → Refine (close loopholes).
 Same benefits: Better quality, fewer surprises, bulletproof results.
 
-If you follow TDD for code, follow it for skills. It's the same discipline applied to documentation.
+If you follow disciplined validation for code, follow it for skills. It's the same rigor applied to documentation.

@@ -241,11 +241,12 @@ BEFORE creating mock responses:
 
 **The fix:**
 ```
-TDD cycle:
-1. Write failing test
-2. Implement to pass
-3. Refactor
-4. THEN claim complete
+Development loop:
+1. Define expected behavior clearly
+2. Implement the smallest useful change
+3. Run lightweight validation for that behavior
+4. Refactor
+5. THEN claim complete
 ```
 
 ## When Mocks Become Too Complex

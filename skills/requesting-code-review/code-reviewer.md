@@ -5,7 +5,7 @@ You are reviewing code changes for production readiness.
 **Your task:**
 1. Review {WHAT_WAS_IMPLEMENTED}
 2. Compare against {PLAN_OR_REQUIREMENTS}
-3. Check code quality, architecture, testing
+3. Check code quality, architecture, and validation evidence
 4. Categorize issues by severity
 5. Assess production readiness
 
@@ -42,11 +42,11 @@ git diff {BASE_SHA}..{HEAD_SHA}
 - Performance implications?
 - Security concerns?
 
-**Testing:**
-- Tests actually test logic (not mocks)?
-- Edge cases covered?
-- Integration tests where needed?
-- All tests passing?
+**Validation:**
+- Validation evidence checks real behavior (not mock-only assertions)?
+- Edge cases are covered by code paths or focused checks?
+- Integration behavior is verified where needed?
+- Requested lightweight validation is clean?
 
 **Requirements:**
 - All plan requirements met?
@@ -71,7 +71,7 @@ git diff {BASE_SHA}..{HEAD_SHA}
 [Bugs, security issues, data loss risks, broken functionality]
 
 #### Important (Should Fix)
-[Architecture problems, missing features, poor error handling, test gaps]
+[Architecture problems, missing features, poor error handling, validation gaps]
 
 #### Minor (Nice to Have)
 [Code style, optimization opportunities, documentation improvements]
@@ -112,7 +112,7 @@ git diff {BASE_SHA}..{HEAD_SHA}
 ```
 ### Strengths
 - Clean database schema with proper migrations (db.ts:15-42)
-- Comprehensive test coverage (18 tests, all edge cases)
+- Comprehensive behavior coverage (edge cases and integration paths reviewed)
 - Good error handling with fallbacks (summarizer.ts:85-92)
 
 ### Issues
@@ -142,5 +142,5 @@ git diff {BASE_SHA}..{HEAD_SHA}
 
 **Ready to merge: With fixes**
 
-**Reasoning:** Core implementation is solid with good architecture and tests. Important issues (help text, date validation) are easily fixed and don't affect core functionality.
+**Reasoning:** Core implementation is solid with good architecture and validation evidence. Important issues (help text, date validation) are easily fixed and don't affect core functionality.
 ```

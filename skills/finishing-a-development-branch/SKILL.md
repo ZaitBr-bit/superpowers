@@ -1,6 +1,6 @@
 ---
 name: finishing-a-development-branch
-description: Use when implementation is complete, all tests pass, and you need to decide how to integrate the work - guides completion of development work by presenting structured options for merge, PR, or cleanup
+description: Use when implementation is complete, validation passes, and you need to decide how to integrate the work - guides completion of development work by presenting structured options for merge, PR, or cleanup
 ---
 
 # Finishing a Development Branch
@@ -9,33 +9,33 @@ description: Use when implementation is complete, all tests pass, and you need t
 
 Guide completion of development work by presenting clear options and handling chosen workflow.
 
-**Core principle:** Verify tests → Present options → Execute choice → Clean up.
+**Core principle:** Verify validation → Present options → Execute choice → Clean up.
 
 **Announce at start:** "I'm using the finishing-a-development-branch skill to complete this work."
 
 ## The Process
 
-### Step 1: Verify Tests
+### Step 1: Verify Validation
 
-**Before presenting options, verify tests pass:**
+**Before presenting options, verify the requested validation passes:**
 
 ```bash
-# Run project's test suite
-npm test / cargo test / pytest / go test ./...
+# Run the project's lightweight validation
+lint / typecheck / build / focused smoke check
 ```
 
-**If tests fail:**
+**If validation fails:**
 ```
-Tests failing (<N> failures). Must fix before completing:
+Validation failing (<N> issues). Must fix before completing:
 
 [Show failures]
 
-Cannot proceed with merge/PR until tests pass.
+Cannot proceed with merge/PR until validation passes.
 ```
 
 Stop. Don't proceed to Step 2.
 
-**If tests pass:** Continue to Step 2.
+**If validation passes:** Continue to Step 2.
 
 ### Step 2: Determine Base Branch
 
@@ -77,10 +77,10 @@ git pull
 # Merge feature branch
 git merge <feature-branch>
 
-# Verify tests on merged result
-<test command>
+# Re-run the requested validation on the merged result
+<validation command>
 
-# If tests pass
+# If validation passes
 git branch -d <feature-branch>
 ```
 
@@ -97,8 +97,8 @@ gh pr create --title "<title>" --body "$(cat <<'EOF'
 ## Summary
 <2-3 bullets of what changed>
 
-## Test Plan
-- [ ] <verification steps>
+## Validation Plan
+- [ ] <lightweight validation steps>
 EOF
 )"
 ```
@@ -160,9 +160,9 @@ git worktree remove <worktree-path>
 
 ## Common Mistakes
 
-**Skipping test verification**
+**Skipping validation**
 - **Problem:** Merge broken code, create failing PR
-- **Fix:** Always verify tests before offering options
+- **Fix:** Always verify validation before offering options
 
 **Open-ended questions**
 - **Problem:** "What should I do next?" → ambiguous
@@ -179,13 +179,13 @@ git worktree remove <worktree-path>
 ## Red Flags
 
 **Never:**
-- Proceed with failing tests
-- Merge without verifying tests on result
+- Proceed with failing validation
+- Merge without verifying validation on result
 - Delete work without confirmation
 - Force-push without explicit request
 
 **Always:**
-- Verify tests before offering options
+- Verify validation before offering options
 - Present exactly 4 options
 - Get typed confirmation for Option 4
 - Clean up worktree for Options 1 & 4 only

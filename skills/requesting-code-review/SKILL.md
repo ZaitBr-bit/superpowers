@@ -64,7 +64,7 @@ HEAD_SHA=$(git rev-parse HEAD)
   DESCRIPTION: Added verifyIndex() and repairIndex() with 4 issue types
 
 [Subagent returns]:
-  Strengths: Clean architecture, real tests
+  Strengths: Clean architecture, behavior matches the requirement
   Issues:
     Important: Missing progress indicators
     Minor: Magic number (100) for reporting interval
@@ -99,7 +99,17 @@ You: [Fix progress indicators]
 
 **If reviewer wrong:**
 - Push back with technical reasoning
-- Show code/tests that prove it works
+- Show code, behavior, or lightweight validation that proves it works
 - Request clarification
+
+## Review Focus
+
+Center the review on whether the change:
+- Matches the requested behavior
+- Handles errors clearly and safely
+- Uses naming that makes the intent obvious
+- Has an architecture that fits the surrounding code
+- Keeps the risk of regressions low
+- Includes any lightweight validation needed to support the change
 
 See template at: requesting-code-review/code-reviewer.md

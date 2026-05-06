@@ -41,13 +41,13 @@ Skip any step = lying, not verifying
 
 | Claim | Requires | Not Sufficient |
 |-------|----------|----------------|
-| Tests pass | Test command output: 0 failures | Previous run, "should pass" |
+| Validation passes | Relevant validation output: clean result / exit 0 | Previous run, "should pass" |
 | Linter clean | Linter output: 0 errors | Partial check, extrapolation |
 | Build succeeds | Build command: exit 0 | Linter passing, logs look good |
-| Bug fixed | Test original symptom: passes | Code changed, assumed fixed |
-| Regression test works | Red-green cycle verified | Test passes once |
+| Bug fixed | Original symptom rechecked with minimal reproduction or focused validation | Code changed, assumed fixed |
+| Regression validated | Original symptom no longer appears after the fix | One-off confirmation without rechecking |
 | Agent completed | VCS diff shows changes | Agent reports "success" |
-| Requirements met | Line-by-line checklist | Tests passing |
+| Requirements met | Line-by-line checklist | Validation passing |
 
 ## Red Flags - STOP
 
@@ -75,16 +75,17 @@ Skip any step = lying, not verifying
 
 ## Key Patterns
 
-**Tests:**
+**Validation:**
 ```
-✅ [Run test command] [See: 34/34 pass] "All tests pass"
+✅ [Run the relevant validation] [See: clean output / exit 0] "Validation passes"
 ❌ "Should pass now" / "Looks correct"
 ```
 
-**Regression tests (TDD Red-Green):**
+**Regression validation:**
 ```
-✅ Write → Run (pass) → Revert fix → Run (MUST FAIL) → Restore → Run (pass)
-❌ "I've written a regression test" (without red-green verification)
+✅ Recheck the original symptom with a minimal reproduction or focused validation after the fix
+✅ Confirm the observed behavior no longer appears and related checks stay clean
+❌ "It's fixed because the code changed" / "I already looked at it"
 ```
 
 **Build:**
@@ -96,7 +97,7 @@ Skip any step = lying, not verifying
 **Requirements:**
 ```
 ✅ Re-read plan → Create checklist → Verify each → Report gaps or completion
-❌ "Tests pass, phase complete"
+❌ "Validation looks fine, phase complete"
 ```
 
 **Agent delegation:**

@@ -44,7 +44,7 @@ Same cycle as code TDD, different test format.
 
 **Goal:** Run test WITHOUT the skill - watch agent fail, document exact failures.
 
-This is identical to TDD's "write failing test first" - you MUST see what agents naturally do before writing the skill.
+This follows baseline-first validation - you MUST see what agents naturally do before writing the skill.
 
 **Process:**
 

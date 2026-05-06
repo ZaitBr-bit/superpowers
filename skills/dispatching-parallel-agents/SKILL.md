@@ -9,7 +9,7 @@ description: Use when facing 2+ independent tasks that can be worked on without 
 
 You delegate tasks to specialized agents with isolated context. By precisely crafting their instructions and context, you ensure they stay focused and succeed at their task. They should never inherit your session's context or history — you construct exactly what they need. This also preserves your own context for coordination work.
 
-When you have multiple unrelated failures (different test files, different subsystems, different bugs), investigating them sequentially wastes time. Each investigation is independent and can happen in parallel.
+When you have multiple unrelated failures (different files, different subsystems, different bugs), investigating them sequentially wastes time. Each investigation is independent and can happen in parallel.
 
 **Core principle:** Dispatch one agent per independent problem domain. Let them work concurrently.
 
@@ -34,7 +34,7 @@ digraph when_to_use {
 ```
 
 **Use when:**
-- 3+ test files failing with different root causes
+- 3+ independent failures with different root causes
 - Multiple subsystems broken independently
 - Each problem can be understood without context from others
 - No shared state between investigations
@@ -58,8 +58,8 @@ Each domain is independent - fixing tool approval doesn't affect abort tests.
 ### 2. Create Focused Agent Tasks
 
 Each agent gets:
-- **Specific scope:** One test file or subsystem
-- **Clear goal:** Make these tests pass
+- **Specific scope:** One file or subsystem
+- **Clear goal:** Make the requested behavior work and validate it
 - **Constraints:** Don't change other code
 - **Expected output:** Summary of what you found and fixed
 
@@ -78,7 +78,7 @@ Task("Fix tool-approval-race-conditions.test.ts failures")
 When agents return:
 - Read each summary
 - Verify fixes don't conflict
-- Run full test suite
+- Run the requested lightweight validation
 - Integrate all changes
 
 ## Agent Prompt Structure
@@ -89,7 +89,7 @@ Good agent prompts are:
 3. **Specific about output** - What should the agent return?
 
 ```markdown
-Fix the 3 failing tests in src/agents/agent-tool-abort.test.ts:
+Investigate and fix the 3 failures in src/agents/agent-tool-abort.test.ts:
 
 1. "should abort tool with partial output capture" - expects 'interrupted at' in message
 2. "should handle mixed completed and aborted tools" - fast tool aborted instead of completed
@@ -97,12 +97,12 @@ Fix the 3 failing tests in src/agents/agent-tool-abort.test.ts:
 
 These are timing/race condition issues. Your task:
 
-1. Read the test file and understand what each test verifies
+1. Read the file and understand what each scenario verifies
 2. Identify root cause - timing issues or actual bugs?
 3. Fix by:
    - Replacing arbitrary timeouts with event-based waiting
    - Fixing bugs in abort implementation if found
-   - Adjusting test expectations if testing changed behavior
+    - Adjusting expectations if behavior requirements changed
 
 Do NOT just increase timeouts - find the real issue.
 
@@ -111,7 +111,7 @@ Return: Summary of what you found and what you fixed.
 
 ## Common Mistakes
 
-**❌ Too broad:** "Fix all the tests" - agent gets lost
+**❌ Too broad:** "Fix all failures" - agent gets lost
 **✅ Specific:** "Fix agent-tool-abort.test.ts" - focused scope
 
 **❌ No context:** "Fix the race condition" - agent doesn't know where
@@ -169,7 +169,7 @@ Agent 3 → Fix tool-approval-race-conditions.test.ts
 After agents return:
 1. **Review each summary** - Understand what changed
 2. **Check for conflicts** - Did agents edit same code?
-3. **Run full suite** - Verify all fixes work together
+3. **Run requested validation** - Verify all fixes work together
 4. **Spot check** - Agents can make systematic errors
 
 ## Real-World Impact

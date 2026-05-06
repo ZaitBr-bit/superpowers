@@ -27,7 +27,7 @@ digraph STYLE_GUIDE {
         // Examples of each
         "Is test passing?" [shape=diamond];
         "Write test first" [shape=box];
-        "npm test" [shape=plaintext];
+        "npm run lint" [shape=plaintext];
         "I am stuck" [shape=ellipse];
         "NEVER use git add -A" [shape=octagon, style=filled, fillcolor=red, fontcolor=white];
     }

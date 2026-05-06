@@ -21,7 +21,7 @@ WHEN receiving code review feedback:
 3. VERIFY: Check against codebase reality
 4. EVALUATE: Technically sound for THIS codebase?
 5. RESPOND: Technical acknowledgment or reasoned pushback
-6. IMPLEMENT: One item at a time, test each
+6. IMPLEMENT: One item at a time, validate each
 ```
 
 ## Forbidden Responses
@@ -106,7 +106,7 @@ FOR multi-item feedback:
      - Blocking issues (breaks, security)
      - Simple fixes (typos, imports)
      - Complex fixes (refactoring, logic)
-  3. Test each fix individually
+  3. Validate each fix individually
   4. Verify no regressions
 ```
 
@@ -123,7 +123,7 @@ Push back when:
 **How to push back:**
 - Use technical reasoning, not defensiveness
 - Ask specific questions
-- Reference working tests/code
+- Reference working behavior/code
 - Involve your human partner if architectural
 
 **Signal if uncomfortable pushing back out loud:** "Strange things are afoot at the Circle K"
@@ -167,7 +167,7 @@ State the correction factually and move on.
 |---------|-----|
 | Performative agreement | State requirement or just act |
 | Blind implementation | Verify against codebase first |
-| Batch without testing | One at a time, test each |
+| Batch without validation | One at a time, validate each |
 | Assuming reviewer is right | Check if breaks things |
 | Avoiding pushback | Technical correctness > comfort |
 | Partial implementation | Clarify all items first |

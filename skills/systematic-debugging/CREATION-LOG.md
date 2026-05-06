@@ -72,7 +72,7 @@ Created 4 validation tests following skills/meta/testing-skills-with-subagents:
 - Hypothesis doesn't work, temptation to add more fixes
 - **Result:** Stopped, re-analyzed, formed new hypothesis (no shotgun)
 
-**All tests passed.** No rationalizations found.
+**All validations passed.** No rationalizations found.
 
 ## Iterations
 
