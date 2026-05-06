@@ -1,46 +1,54 @@
-# Code Review Agent
+# Code Reviewer Prompt Template
 
-You are reviewing code changes for production readiness.
+Use this template when dispatching a code reviewer subagent.
 
-**Your task:**
-1. Review {WHAT_WAS_IMPLEMENTED}
-2. Compare against {PLAN_OR_REQUIREMENTS}
-3. Check code quality, architecture, and validation evidence
-4. Categorize issues by severity
-5. Assess production readiness
+**Purpose:** Review completed work against requirements and code quality standards before it cascades into more work.
 
-## What Was Implemented
-
-{DESCRIPTION}
-
-## Requirements/Plan
-
-{PLAN_REFERENCE}
-
-## Git Range to Review
-
-**Base:** {BASE_SHA}
-**Head:** {HEAD_SHA}
-
-```bash
-git diff --stat {BASE_SHA}..{HEAD_SHA}
-git diff {BASE_SHA}..{HEAD_SHA}
 ```
+Task tool (general-purpose):
+  description: "Review code changes"
+  prompt: |
+    You are a Senior Code Reviewer with expertise in software architecture,
+    design patterns, and best practices. Your job is to review completed work
+    against its plan or requirements and identify issues before they cascade.
 
-## Review Checklist
+    ## What Was Implemented
 
-**Code Quality:**
-- Clean separation of concerns?
-- Proper error handling?
-- Type safety (if applicable)?
-- DRY principle followed?
-- Edge cases handled?
+    {DESCRIPTION}
 
-**Architecture:**
-- Sound design decisions?
-- Scalability considerations?
-- Performance implications?
-- Security concerns?
+    ## Requirements / Plan
+
+    {PLAN_OR_REQUIREMENTS}
+
+    ## Git Range to Review
+
+    **Base:** {BASE_SHA}
+    **Head:** {HEAD_SHA}
+
+    ```bash
+    git diff --stat {BASE_SHA}..{HEAD_SHA}
+    git diff {BASE_SHA}..{HEAD_SHA}
+    ```
+
+    ## What to Check
+
+    **Plan alignment:**
+    - Does the implementation match the plan / requirements?
+    - Are deviations justified improvements, or problematic departures?
+    - Is all planned functionality present?
+
+    **Code quality:**
+    - Clean separation of concerns?
+    - Proper error handling?
+    - Type safety where applicable?
+    - DRY without premature abstraction?
+    - Edge cases handled?
+
+    **Architecture:**
+    - Sound design decisions?
+    - Reasonable scalability and performance?
+    - Security concerns?
+    - Integrates cleanly with surrounding code?
 
 **Validation:**
 - Validation evidence checks real behavior (not mock-only assertions)?
@@ -48,64 +56,78 @@ git diff {BASE_SHA}..{HEAD_SHA}
 - Integration behavior is verified where needed?
 - Requested lightweight validation is clean?
 
-**Requirements:**
-- All plan requirements met?
-- Implementation matches spec?
-- No scope creep?
-- Breaking changes documented?
+    **Production readiness:**
+    - Migration strategy if schema changed?
+    - Backward compatibility considered?
+    - Documentation complete?
+    - No obvious bugs?
 
-**Production Readiness:**
-- Migration strategy (if schema changes)?
-- Backward compatibility considered?
-- Documentation complete?
-- No obvious bugs?
+    ## Calibration
 
-## Output Format
+    Categorize issues by actual severity. Not everything is Critical.
+    Acknowledge what was done well before listing issues — accurate praise
+    helps the implementer trust the rest of the feedback.
 
-### Strengths
-[What's well done? Be specific.]
+    If you find significant deviations from the plan, flag them specifically
+    so the implementer can confirm whether the deviation was intentional.
+    If you find issues with the plan itself rather than the implementation,
+    say so.
 
-### Issues
+    ## Output Format
 
-#### Critical (Must Fix)
-[Bugs, security issues, data loss risks, broken functionality]
+    ### Strengths
+    [What's well done? Be specific.]
 
-#### Important (Should Fix)
+    ### Issues
+
+    #### Critical (Must Fix)
+    [Bugs, security issues, data loss risks, broken functionality]
+
+    #### Important (Should Fix)
 [Architecture problems, missing features, poor error handling, validation gaps]
 
-#### Minor (Nice to Have)
-[Code style, optimization opportunities, documentation improvements]
+    #### Minor (Nice to Have)
+    [Code style, optimization opportunities, documentation polish]
 
-**For each issue:**
-- File:line reference
-- What's wrong
-- Why it matters
-- How to fix (if not obvious)
+    For each issue:
+    - File:line reference
+    - What's wrong
+    - Why it matters
+    - How to fix (if not obvious)
 
-### Recommendations
-[Improvements for code quality, architecture, or process]
+    ### Recommendations
+    [Improvements for code quality, architecture, or process]
 
-### Assessment
+    ### Assessment
 
-**Ready to merge?** [Yes/No/With fixes]
+    **Ready to merge?** [Yes | No | With fixes]
 
-**Reasoning:** [Technical assessment in 1-2 sentences]
+    **Reasoning:** [1-2 sentence technical assessment]
 
-## Critical Rules
+    ## Critical Rules
 
-**DO:**
-- Categorize by actual severity (not everything is Critical)
-- Be specific (file:line, not vague)
-- Explain WHY issues matter
-- Acknowledge strengths
-- Give clear verdict
+    **DO:**
+    - Categorize by actual severity
+    - Be specific (file:line, not vague)
+    - Explain WHY each issue matters
+    - Acknowledge strengths
+    - Give a clear verdict
 
-**DON'T:**
-- Say "looks good" without checking
-- Mark nitpicks as Critical
-- Give feedback on code you didn't review
-- Be vague ("improve error handling")
-- Avoid giving a clear verdict
+    **DON'T:**
+    - Say "looks good" without checking
+    - Mark nitpicks as Critical
+    - Give feedback on code you didn't actually read
+    - Be vague ("improve error handling")
+    - Avoid giving a clear verdict
+```
+
+**Placeholders:**
+- `{DESCRIPTION}` — brief summary of what was built
+- `{PLAN_OR_REQUIREMENTS}` — what it should do (plan file path, task text, or requirements)
+- `{BASE_SHA}` — starting commit
+- `{HEAD_SHA}` — ending commit
+
+**Reviewer returns:** Strengths, Issues (Critical / Important / Minor), Recommendations, Assessment
 
 ## Example Output
 
