@@ -12,8 +12,8 @@ Task tool (general-purpose):
 
   DESCRIPTION: [task summary, from implementer's report]
   PLAN_OR_REQUIREMENTS: Task N from [plan-file]
-  BASE_SHA: [commit before task]
-  HEAD_SHA: [current commit]
+  DIFF: [git diff --no-color output]
+  FILES_CHANGED: [comma-separated list of changed files]
 ```
 
 **In addition to standard code quality concerns, the reviewer should check:**

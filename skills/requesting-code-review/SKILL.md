@@ -23,10 +23,9 @@ Dispatch a code reviewer subagent to catch issues before they cascade. The revie
 
 ## How to Request
 
-**1. Get git SHAs:**
+**1. Capture the git diff:**
 ```bash
-BASE_SHA=$(git rev-parse HEAD~1)  # or origin/main
-HEAD_SHA=$(git rev-parse HEAD)
+DIFF=$(git diff --no-color)
 ```
 
 **2. Dispatch code reviewer subagent:**
@@ -36,8 +35,7 @@ Use Task tool with `general-purpose` type, fill template at `code-reviewer.md`
 **Placeholders:**
 - `{DESCRIPTION}` - Brief summary of what you built
 - `{PLAN_OR_REQUIREMENTS}` - What it should do
-- `{BASE_SHA}` - Starting commit
-- `{HEAD_SHA}` - Ending commit
+- `{DIFF}` - Git diff output
 
 **3. Act on feedback:**
 - Fix Critical issues immediately
@@ -52,14 +50,12 @@ Use Task tool with `general-purpose` type, fill template at `code-reviewer.md`
 
 You: Let me request code review before proceeding.
 
-BASE_SHA=$(git log --oneline | grep "Task 1" | head -1 | awk '{print $1}')
-HEAD_SHA=$(git rev-parse HEAD)
+DIFF=$(git diff --no-color)
 
 [Dispatch code reviewer subagent]
   DESCRIPTION: Added verifyIndex() and repairIndex() with 4 issue types
   PLAN_OR_REQUIREMENTS: Task 2 from docs/superpowers/plans/deployment-plan.md
-  BASE_SHA: a7981ec
-  HEAD_SHA: 3df7661
+  DIFF: [git diff output]
 
 [Subagent returns]:
   Strengths: Clean architecture, behavior matches the requirement

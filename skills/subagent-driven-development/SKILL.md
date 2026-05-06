@@ -50,7 +50,7 @@ digraph process {
         "Dispatch implementer subagent (./implementer-prompt.md)" [shape=box];
         "Implementer subagent asks questions?" [shape=diamond];
         "Answer questions, provide context" [shape=box];
-        "Implementer subagent implements, validates, commits, self-reviews" [shape=box];
+        "Implementer subagent implements, validates, self-reviews" [shape=box];
         "Dispatch spec reviewer subagent (./spec-reviewer-prompt.md)" [shape=box];
         "Spec reviewer subagent confirms code matches spec?" [shape=diamond];
         "Implementer subagent fixes spec gaps" [shape=box];
@@ -69,8 +69,8 @@ digraph process {
     "Dispatch implementer subagent (./implementer-prompt.md)" -> "Implementer subagent asks questions?";
     "Implementer subagent asks questions?" -> "Answer questions, provide context" [label="yes"];
     "Answer questions, provide context" -> "Dispatch implementer subagent (./implementer-prompt.md)";
-    "Implementer subagent asks questions?" -> "Implementer subagent implements, validates, commits, self-reviews" [label="no"];
-    "Implementer subagent implements, validates, commits, self-reviews" -> "Dispatch spec reviewer subagent (./spec-reviewer-prompt.md)";
+    "Implementer subagent asks questions?" -> "Implementer subagent implements, validates, self-reviews" [label="no"];
+    "Implementer subagent implements, validates, self-reviews" -> "Dispatch spec reviewer subagent (./spec-reviewer-prompt.md)";
     "Dispatch spec reviewer subagent (./spec-reviewer-prompt.md)" -> "Spec reviewer subagent confirms code matches spec?";
     "Spec reviewer subagent confirms code matches spec?" -> "Implementer subagent fixes spec gaps" [label="no"];
     "Implementer subagent fixes spec gaps" -> "Dispatch spec reviewer subagent (./spec-reviewer-prompt.md)" [label="re-review"];
@@ -148,12 +148,12 @@ Implementer: "Got it. Implementing now..."
   - Implemented install-hook command
   - Validated with lightweight checks
   - Self-review: Found I missed --force flag, added it
-  - Committed
+  - Reported changed files
 
 [Dispatch spec compliance reviewer]
 Spec reviewer: ✅ Spec compliant - all requirements met, nothing extra
 
-[Get git SHAs, dispatch code quality reviewer]
+[Capture diff, dispatch code quality reviewer]
 Code reviewer: Strengths: Clean implementation and solid quality. Issues: None. Approved.
 
 [Mark Task 1 complete]
@@ -168,7 +168,7 @@ Implementer:
   - Added verify/repair modes
   - Validated with lightweight checks
   - Self-review: All good
-  - Committed
+  - Reported changed files
 
 [Dispatch spec compliance reviewer]
 Spec reviewer: ❌ Issues:
@@ -246,10 +246,23 @@ Done!
 
 A única exceção é `BLOCKED` com escalação ao humano — nesse caso use `vscode_askQuestions` para coletar o input necessário antes de prosseguir. Em todos os outros casos, a execução é contínua até que todas as tasks estejam completas ou um bloqueio real exija input.
 
+### Read-Only Git Mode
+
+In read-only mode, implementers do NOT commit. After each task:
+
+1. Controller captures `git diff --no-color`
+2. Controller dispatches spec reviewer with the diff
+3. Reviewers assess the diff directly
+4. If issues found, implementer fixes; diff recaptured; review repeats
+5. Once task approved, move to next task
+
+All changes remain uncommitted; user handles git operations after completion.
+
 ## Red Flags
 
 **Never:**
 - Start implementation on main/master branch without explicit user consent
+- Instruct implementer to commit in read-only mode
 - Stop between tasks to ask permission to continue (use `vscode_askQuestions` only when genuinely blocked)
 - Skip reviews (spec compliance OR code quality)
 - Proceed with unfixed issues

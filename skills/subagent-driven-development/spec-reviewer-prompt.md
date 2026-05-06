@@ -10,15 +10,23 @@ Task tool (general-purpose):
   prompt: |
     You are reviewing whether an implementation matches its specification.
 
-    ## What Was Requested
+     ## What Was Requested
 
-    [FULL TEXT of task requirements]
+     [FULL TEXT of task requirements]
 
-    ## What Implementer Claims They Built
+     ## What Implementer Claims They Built
 
-    [From implementer's report]
+     [From implementer's report]
 
-    ## CRITICAL: Do Not Trust the Report
+     ## Git Diff
+
+     ```diff
+     {DIFF}
+     ```
+
+     Files changed: {FILES_CHANGED}
+
+     ## CRITICAL: Do Not Trust The Report
 
     The implementer finished suspiciously quickly. Their report may be incomplete,
     inaccurate, or optimistic. You MUST verify everything independently.

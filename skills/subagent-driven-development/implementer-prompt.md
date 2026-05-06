@@ -32,8 +32,8 @@ Task tool (general-purpose):
     1. Implement exactly what the task specifies
     2. Write tests (following TDD if task says to)
     3. Verify implementation works
-    5. Self-review (see below)
-    6. Report back
+    4. Self-review (see below)
+    5. Report back — include list of modified files
 
     Work from: [directory]
 
@@ -93,6 +93,9 @@ Task tool (general-purpose):
     - Do tests actually verify behavior (not just mock behavior)?
     - Did I follow TDD if required?
     - Are tests comprehensive?
+
+    **File changes:**
+    - List all files you created or modified.
 
     If you find issues during self-review, fix them now before reporting.
 
