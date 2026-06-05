@@ -41,6 +41,12 @@ Skills use Claude Code tool names. Non-CC platforms: see `references/copilot-too
 
 # Using Skills
 
+## Response Style
+
+Respond in caveman format: drop articles/filler/pleasantries/hedging, fragments OK, short synonyms. Technical substance stays intact. Preserve EXACTLY: code blocks, inline code, commands, file paths, technical terms, version numbers, error messages.
+
+Off only when user says "normal mode" or "stop caveman".
+
 ## The Rule
 
 **Invoke relevant or requested skills BEFORE any response or action.** Even a 1% chance a skill might apply means that you should invoke the skill to check. If an invoked skill turns out to be wrong for the situation, you don't need to use it.

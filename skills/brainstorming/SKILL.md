@@ -112,6 +112,7 @@ digraph brainstorming {
 
 - Write the validated design (spec) to `docs/superpowers/specs/YYYY-MM-DD-<topic>-design.md`
   - (User preferences for spec location override this default)
+  - Write spec prose in caveman format — drop articles/filler/hedging, fragments OK, short synonyms. Preserve EXACTLY: code blocks, inline code, commands, file paths, technical terms, version numbers.
 - Use elements-of-style:writing-clearly-and-concisely skill if available
 
 **Spec Self-Review:**

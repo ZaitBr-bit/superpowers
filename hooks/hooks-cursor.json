@@ -3,7 +3,7 @@
   "hooks": {
     "sessionStart": [
       {
-        "command": "./hooks/run-hook.cmd session-start"
+        "command": "cmd /c \"./hooks/run-hook.cmd session-start\""
       }
     ]
   }
