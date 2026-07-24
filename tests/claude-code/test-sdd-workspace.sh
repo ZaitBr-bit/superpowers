@@ -34,7 +34,7 @@ main() {
     # macOS mktemp lives under /var -> /private/var).
     git init -q -b main "$TEST_ROOT/repo"
     local repo
-    repo="$(cd "$TEST_ROOT/repo" && git rev-parse --show-toplevel)"
+    repo="$(cd "$TEST_ROOT/repo" && pwd -P)"
 
     cat > "$repo/plan-a.md" <<'PLAN'
 # Plan A
@@ -129,14 +129,14 @@ PLAN
         echo "    got: $brief_path"
     fi
 
-    # --- review-package takes the plan first and lands in its directory ---
+    # --- review-package captures uncommitted tracked and untracked changes ---
     local git_id=(-c user.email=t@example.com -c user.name=t -c commit.gpgsign=false)
     ( cd "$repo" \
-        && git "${git_id[@]}" commit -qm c1 \
-        && printf 'y\n' > f && git add f \
-        && git "${git_id[@]}" commit -qm c2 )
+        && git "${git_id[@]}" commit -qm baseline \
+        && printf '\nChanged.\n' >> plan-a.md \
+        && printf 'new\n' > new-file.txt )
     local rp_out rp_path
-    rp_out="$(cd "$repo" && "$SDD_SCRIPTS/review-package" plan-a.md HEAD~1 HEAD)"
+    rp_out="$(cd "$repo" && "$SDD_SCRIPTS/review-package" plan-a.md)"
     rp_path="$(printf '%s\n' "$rp_out" | sed -n 's/^wrote \(.*\): [0-9].*$/\1/p')"
     case "$rp_path" in
         "$repo/.superpowers/sdd/plan-a/review-"*.diff)
@@ -146,9 +146,22 @@ PLAN
             echo "    got: $rp_path"
             ;;
     esac
+    if grep -Fq "Changed." "$rp_path" && grep -Fq "new-file.txt" "$rp_path"; then
+        pass "review-package includes tracked and untracked working-tree changes"
+    else
+        fail "review-package includes tracked and untracked working-tree changes"
+    fi
+    local commit_count cached_after_package
+    commit_count="$(cd "$repo" && git rev-list --count HEAD)"
+    cached_after_package="$(cd "$repo" && git diff --cached --name-only)"
+    if [[ "$commit_count" -eq 1 && -z "$cached_after_package" ]]; then
+        pass "review-package does not stage or commit changes"
+    else
+        fail "review-package does not stage or commit changes"
+    fi
 
     rc=0
-    (cd "$repo" && "$SDD_SCRIPTS/review-package" HEAD~1 HEAD >/dev/null 2>&1) || rc=$?
+    (cd "$repo" && "$SDD_SCRIPTS/review-package" >/dev/null 2>&1) || rc=$?
     if [[ "$rc" -eq 2 ]]; then
         pass "review-package without a plan errors with exit 2"
     else
@@ -157,7 +170,7 @@ PLAN
     fi
 
     local rp_explicit
-    rp_explicit="$(cd "$repo" && "$SDD_SCRIPTS/review-package" plan-a.md HEAD~1 HEAD "$TEST_ROOT/explicit.diff")"
+    rp_explicit="$(cd "$repo" && "$SDD_SCRIPTS/review-package" plan-a.md "$TEST_ROOT/explicit.diff")"
     if [[ -s "$TEST_ROOT/explicit.diff" && "$rp_explicit" == *"$TEST_ROOT/explicit.diff"* ]]; then
         pass "review-package honors an explicit OUTFILE"
     else
@@ -169,7 +182,7 @@ PLAN
     local wt="$TEST_ROOT/wt"
     ( cd "$repo" && git worktree add -q "$wt" -b wt-feature )
     local wt_root wt_dir
-    wt_root="$(cd "$wt" && git rev-parse --show-toplevel)"
+    wt_root="$(cd "$wt" && pwd -P)"
     wt_dir="$(cd "$wt" && "$SDD_SCRIPTS/sdd-workspace" plan-a.md)"
     if [[ "$wt_dir" == "$wt_root/.superpowers/sdd/plan-a" && "$wt_dir" != "$dir_a" ]]; then
         pass "linked worktree resolves its own distinct workspace"

@@ -13,36 +13,23 @@ Subagent (general-purpose):
   model: [MODEL — REQUIRED: choose per SKILL.md Model Selection; an omitted
          model silently inherits the session's most expensive one]
   [EFFORT_FIELD]: medium [REQUIRED: Claude uses effort; Codex uses reasoning_effort]
+  [MAX_TURNS_FIELD]: 6 [Claude only: use maxTurns; omit in Codex]
   prompt: |
     You are reviewing one task's implementation: first whether it matches its
     requirements, then whether it is well-built. This is a task-scoped gate,
     not a merge review — a broad whole-branch review happens separately after
     all tasks are complete.
 
-    ## What Was Requested
+    ## Input Handling
 
-    Read the task brief: [BRIEF_FILE]
-
-    Global constraints from the spec/design that bind this task:
-    [GLOBAL_CONSTRAINTS]
-
-    ## What the Implementer Claims They Built
-
-    Read the implementer's report: [REPORT_FILE]
-
-    ## Diff Under Review
-
-    **Base:** [BASE_SHA]
-    **Head:** [HEAD_SHA]
-    **Diff file:** [DIFF_FILE]
-
-    Read the diff file once — it contains the commit list, a stat summary,
-    and the full diff with surrounding context, and it is your view of the
+    Read the task brief, implementer report, and diff file listed in Inputs.
+    Read the diff file once — it contains working-tree status and the complete
+    tracked and untracked diff with surrounding context, and it is your view of the
     change. The diff's context lines ARE the changed files: do not Read a
     changed file separately unless a hunk you must judge is cut off
     mid-function — and say so in your report. Do not re-run git commands.
-    If the diff file is missing, fetch the diff yourself:
-    `git diff --stat [BASE_SHA]..[HEAD_SHA]` and `git diff [BASE_SHA]..[HEAD_SHA]`.
+    If the diff file is missing, report that the review cannot proceed; do not
+    mutate git state to reconstruct it.
     Do not crawl the broader codebase. Inspect code outside the diff only
     to evaluate a concrete risk you can name — one focused check per named
     risk, and name both the risk and what you checked in your report.
@@ -134,36 +121,27 @@ Subagent (general-purpose):
     block), that IS a finding — report it as Important, labeled
     plan-mandated. The plan's authorship does not grade its own work; the
     human decides.
-    Acknowledge what was done well before listing issues — accurate praise
-    helps the implementer trust the rest of the feedback.
-
     ## Output Format
 
-    ### Spec Compliance
+    If spec compliance and task quality both pass with no finding, return
+    exactly:
+    `PASS`
 
-    - ✅ Spec compliant | ❌ Issues found: [what's missing/extra/misunderstood,
-      with file:line references]
-    - ⚠️ Cannot verify from diff: [requirements you could not verify from the
-      diff alone, and what the controller should check — report alongside the
-      ✅/❌ verdict for everything you could verify]
+    Otherwise return only:
+    - `SPEC: PASS | FAIL | CANNOT_VERIFY`
+    - `QUALITY: PASS | FAIL`
+    - findings ordered Critical, Important, Minor
 
-    ### Strengths
-    [What's well done? Be specific.]
+    Each finding: severity, file:line, defect, impact, and fix if not obvious.
+    Include unverified requirements under `CANNOT_VERIFY`. No strengths,
+    recommendations, preamble, or closing summary.
 
-    ### Issues
+    ## Inputs
 
-    #### Critical (Must Fix)
-    #### Important (Should Fix)
-    #### Minor (Nice to Have)
-
-    For each issue: file:line, what's wrong, why it matters, how to fix
-    (if not obvious).
-
-    ### Assessment
-
-    **Task quality:** [Approved | Needs fixes]
-
-    **Reasoning:** [1-2 sentence technical assessment]
+    **Task brief:** [BRIEF_FILE]
+    **Global constraints:** [GLOBAL_CONSTRAINTS]
+    **Implementer report:** [REPORT_FILE]
+    **Diff file:** [DIFF_FILE]
 ```
 
 **Placeholders:**
@@ -176,11 +154,8 @@ Subagent (general-purpose):
   are already in this template)
 - `[REPORT_FILE]` — REQUIRED: the file the implementer wrote its detailed
   report to
-- `[BASE_SHA]` — commit before this task
-- `[HEAD_SHA]` — current commit
 - `[DIFF_FILE]` — REQUIRED: the path the controller wrote the review
-  package to (`scripts/review-package PLAN_FILE BASE HEAD` prints the unique
+  package to (`scripts/review-package PLAN_FILE` prints the unique
   path it wrote; the package never enters the controller's context)
 
-**Reviewer returns:** Spec Compliance verdict (✅/❌/⚠️), Strengths, Issues
-(Critical/Important/Minor), Task quality verdict
+**Reviewer returns:** `PASS`, or compact spec/quality verdicts plus findings

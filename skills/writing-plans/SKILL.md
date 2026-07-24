@@ -13,7 +13,8 @@ Assume they are a skilled developer, but know almost nothing about our toolset o
 
 **Announce at start:** "I'm using the writing-plans skill to create the implementation plan."
 
-**Context:** If working in an isolated worktree, it should have been created via the `superpowers:using-git-worktrees` skill at execution time.
+**Context:** Execution stays in the currently open branch and directory.
+Mention a new branch or worktree only when the user explicitly requested one.
 **Save plans to:** `docs/superpowers/plans/YYYY-MM-DD-<feature-name>.md`
 - (User preferences for plan location override this default)
 
@@ -34,12 +35,20 @@ This structure informs the task decomposition. Each task should produce self-con
 
 ## Task Right-Sizing
 
-A task is the smallest unit that carries its own test cycle and is worth a
-fresh reviewer's gate. When drawing task boundaries: fold setup,
+A task is the smallest unit that carries its own test cycle and a distinct
+risk decision. When drawing task boundaries: fold setup,
 configuration, scaffolding, and documentation steps into the task whose
 deliverable needs them; split only where a reviewer could meaningfully
 reject one task while approving its neighbor. Each task ends with an
 independently testable deliverable.
+
+## Task Risk
+
+Assign each task `low`, `medium`, or `high` using
+[the shared risk criteria](../subagent-driven-development/references/risk-classification.md).
+Low risk requires every listed condition; medium is the default when
+uncertain. The execution controller reassesses risk from the actual diff and
+may promote it before completion.
 
 ## Bite-Sized Task Granularity
 
@@ -78,6 +87,8 @@ include this section.]
 
 ````markdown
 ### Task N: [Component Name]
+
+**Risk:** low | medium | high - [observable reason]
 
 **Files:**
 - Create: `exact/path/to/file.py`
@@ -145,25 +156,30 @@ After saving the plan, offer execution choice:
 
 **Decision logic — MANDATORY:**
 1. If the user has **already provided** an execution preference in the current context, **do not ask again**. Reuse that choice.
-2. If no explicit preference exists, ask via `vscode_askQuestions`.
-3. After a choice is known (new or reused), **continue immediately in the same turn** by invoking the selected execution skill and starting Task 1. Do not stop with messages like "if you want, I can continue".
-4. Any follow-up question needed during execution must also use `vscode_askQuestions` (never inline chat questions).
+2. If no explicit preference exists, compute the recommended default:
+   - 1-2 mechanical tasks with clear requirements and limited file scope:
+     recommend Inline Execution. A subagent would cost more context than it saves.
+   - 3+ tasks, integration work, or tasks needing isolated context: recommend
+     Subagent-Driven.
+3. Ask via `vscode_askQuestions`, placing the computed recommendation first.
+4. After a choice is known (new or reused), **continue immediately in the same turn** by invoking the selected execution skill and starting Task 1. Do not stop with messages like "if you want, I can continue".
+5. Any follow-up question needed during execution must also use `vscode_askQuestions` (never inline chat questions).
 
 Example `vscode_askQuestions` call:
 ```
 header: "Execution approach"
 question: "Plan complete and saved to docs/superpowers/plans/<filename>.md. Which execution approach do you prefer?"
 options:
-  - label: "Subagent-Driven (recommended)"
-    description: "Dispatch a fresh subagent per task, review between tasks, fast iteration"
+  - label: "[Computed recommendation]"
+    description: "[Why this plan's size and coupling fit this execution mode]"
     recommended: true
-  - label: "Inline Execution"
-    description: "Execute tasks in this session using executing-plans, batch execution with checkpoints"
+  - label: "[Other execution mode]"
+    description: "[Its trade-off for this plan]"
 ```
 
 **If Subagent-Driven chosen:**
 - **REQUIRED SUB-SKILL:** Use superpowers:subagent-driven-development
-- Fresh subagent per task + two-stage review
+- Fresh subagent per task + risk-based task review + mandatory final review
 
 **Operational mapping (VS Code agent):**
 - "Subagent-Driven" means: invoke `runSubagent` immediately in the same turn with Task 1 scope.

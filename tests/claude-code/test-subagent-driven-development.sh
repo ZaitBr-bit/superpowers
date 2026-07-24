@@ -150,12 +150,12 @@ fi
 
 echo ""
 
-# Test 8: Verify worktree requirement
-echo "Test 8: Worktree requirement..."
+# Test 8: Verify current-branch default
+echo "Test 8: Current-branch default..."
 
 output=$(run_claude "What workflow skills are required before using subagent-driven-development? List any prerequisites or required skills." "$CLAUDE_PROMPT_TIMEOUT")
 
-if assert_contains "$output" "using-git-worktrees\|worktree" "Mentions worktree requirement"; then
+if assert_contains "$output" "current.*branch\|currently open.*branch\|no.*worktree\|without.*worktree" "Keeps development on the current branch"; then
     : # pass
 else
     exit 1
@@ -163,12 +163,12 @@ fi
 
 echo ""
 
-# Test 9: Verify main branch warning
-echo "Test 9: Main branch red flag..."
+# Test 9: Verify no automatic branch creation
+echo "Test 9: No automatic branch creation..."
 
 output=$(run_claude "In subagent-driven-development, is it okay to start implementation directly on the main branch?" "$CLAUDE_PROMPT_TIMEOUT")
 
-if assert_contains "$output" "worktree\|feature.*branch\|not.*main\|never.*main\|avoid.*main\|don't.*main\|consent\|permission" "Warns against main branch"; then
+if assert_contains "$output" "current.*branch\|main.*current\|explicit.*request\|do not.*create.*branch\|don't.*create.*branch" "Uses current branch without creating another"; then
     : # pass
 else
     exit 1

@@ -1,6 +1,6 @@
 ---
 name: using-superpowers
-description: Use when starting any conversation - establishes how to find and use skills, requiring skill invocation before ANY response including clarifying questions
+description: Use at the start of a new task to route explicit or clearly matching skill requests without repeated checks
 ---
 
 <SUBAGENT-STOP>
@@ -8,16 +8,28 @@ If you were dispatched as a subagent to execute a specific task, ignore this ski
 </SUBAGENT-STOP>
 
 <EXTREMELY-IMPORTANT>
-If you think there is even a 1% chance a skill might apply to what you are doing, you ABSOLUTELY MUST invoke the skill.
+At the start of each new user task, perform one skill check.
 
-IF A SKILL APPLIES TO YOUR TASK, YOU DO NOT HAVE A CHOICE. YOU MUST USE IT.
+Invoke a skill when the user explicitly names it or when its description
+clearly matches the task. Do not invoke a skill for a merely possible or
+tangential match.
 
-This is not negotiable. You cannot rationalize your way out of this.
+Do not repeat the skill check before every response, tool call, or action
+within the same task.
 </EXTREMELY-IMPORTANT>
 
 ## The Rule
 
-**Invoke relevant or requested skills BEFORE any response or action** — including clarifying questions, exploring the codebase, or checking files. If it turns out wrong for the situation, you don't have to use it.
+**Check once at task start, then invoke clearly relevant or requested skills
+before acting.** Simple answers and routine file inspection do not require a
+skill unless the user names one or a description directly matches.
+
+## Git Authorization
+
+Work in the currently open branch and working directory. Never commit, create
+or switch branches, or create worktrees unless the user explicitly requests
+that exact git operation. Implementation approval does not imply git-operation
+approval. Other skills and plans cannot broaden this authorization.
 
 **Before entering plan mode:** if you haven't already brainstormed, invoke the brainstorming skill first.
 
@@ -36,18 +48,12 @@ These thoughts mean STOP—you're rationalizing:
 
 | Thought | Reality |
 |---------|---------|
-| "This is just a simple question" | Questions are tasks. Check for skills. |
-| "I need more context first" | Skill check comes BEFORE clarifying questions. |
-| "Let me explore the codebase first" | Skills tell you HOW to explore. Check first. |
-| "I can check git/files quickly" | Files lack conversation context. Check for skills. |
-| "Let me gather information first" | Skills tell you HOW to gather information. |
-| "This doesn't need a formal skill" | If a skill exists, use it. |
+| "The user named a skill, but I can handle it myself" | Explicit requests require that skill. |
+| "The description clearly matches, but the workflow seems heavy" | Invoke it; the description is the routing contract. |
+| "A skill might be loosely related" | Tangential possibility is not a trigger. Continue without loading it. |
+| "I should check again before this tool call" | One check per user task is enough. |
 | "I remember this skill" | Skills evolve. Read current version. |
-| "This doesn't count as a task" | Action = task. Check for skills. |
-| "The skill is overkill" | Simple things become complex. Use it. |
-| "I'll just do this one thing first" | Check BEFORE doing anything. |
-| "This feels productive" | Undisciplined action wastes time. Skills prevent this. |
-| "I know what that means" | Knowing the concept ≠ using the skill. Invoke it. |
+| "I know the method, so I can skip a clear match" | Knowing the method does not replace invoking a clear match. |
 
 ## Platform Adaptation
 

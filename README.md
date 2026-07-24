@@ -203,17 +203,17 @@ The Pi package loads the Superpowers skills and a small extension that injects t
 
 1. **brainstorming** - Activates before writing code. Refines rough ideas through questions, explores alternatives, presents design in sections for validation. Saves design document.
 
-2. **using-git-worktrees** - Activates after design approval. Creates isolated workspace on new branch, runs project setup, verifies clean test baseline.
+2. **using-git-worktrees** - Activates only when the user explicitly requests a new branch, worktree, or isolated workspace.
 
 3. **writing-plans** - Activates with approved design. Breaks work into bite-sized tasks (2-5 minutes each). Every task has exact file paths, complete code, verification steps.
 
-4. **subagent-driven-development** or **executing-plans** - Activates with plan. Dispatches fresh subagent per task with two-stage review (spec compliance, then code quality), or executes in batches with human checkpoints.
+4. **subagent-driven-development** or **executing-plans** - Activates with plan. Dispatches a fresh subagent per task with independent task review based on risk and mandatory final review, or executes in batches with human checkpoints.
 
-5. **test-driven-development** - Activates during implementation. Enforces RED-GREEN-REFACTOR: write failing test, watch it fail, write minimal code, watch it pass, commit. Deletes code written before tests.
+5. **test-driven-development** - Activates during implementation. Enforces RED-GREEN-REFACTOR: write failing test, watch it fail, write minimal code, and watch it pass.
 
-6. **requesting-code-review** - Activates between tasks. Reviews against plan, reports issues by severity. Critical issues block progress.
+6. **requesting-code-review** - Reviews medium/high-risk tasks and the final branch against the plan, reporting issues by severity. Critical issues block progress.
 
-7. **finishing-a-development-branch** - Activates when tasks complete. Verifies tests, presents options (merge/PR/keep/discard), cleans up worktree.
+7. **finishing-a-development-branch** - Activates when tasks complete. Verifies tests and leaves changes uncommitted on the current branch unless another git operation is explicitly requested.
 
 **The agent checks for relevant skills before any task.** Mandatory workflows, not suggestions.
 
@@ -235,9 +235,9 @@ The Pi package loads the Superpowers skills and a small extension that injects t
 - **dispatching-parallel-agents** - Concurrent subagent workflows
 - **requesting-code-review** - Pre-review checklist
 - **receiving-code-review** - Responding to feedback
-- **using-git-worktrees** - Parallel development branches
+- **using-git-worktrees** - Explicitly requested branch/worktree isolation
 - **finishing-a-development-branch** - Merge/PR decision workflow
-- **subagent-driven-development** - Fast iteration with two-stage review (spec compliance, then code quality)
+- **subagent-driven-development** - Fast iteration with risk-based task review and mandatory final review
 
 **Meta**
 - **writing-skills** - Create new skills following best practices (includes testing methodology)
@@ -257,8 +257,8 @@ Read [the original release announcement](https://blog.fsck.com/2025/10/09/superp
 The general contribution process for Superpowers is below. Keep in mind that we don't generally accept contributions of new skills and that any updates to skills must work across all of the coding agents we support.
 
 1. Fork the repository
-2. Switch to the 'dev' branch
-3. Create a branch for your work
+2. Select the branch you intend to use
+3. Keep automated assistants on that current branch unless you explicitly request another branch or worktree
 4. Follow the `writing-skills` skill for creating and testing new and modified skills
 5. Submit a PR, being sure to fill in the pull request template.
 

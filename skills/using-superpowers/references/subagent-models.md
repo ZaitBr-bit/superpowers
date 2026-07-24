@@ -9,6 +9,15 @@ Always use medium reasoning effort:
 - Codex dispatch: `model: gpt-5.6-terra|gpt-5.6-sol` and
   `reasoning_effort: medium`
 
+For Claude Code, also cap agent turns:
+
+- lookup or scoped re-review: `maxTurns: 4`
+- ordinary review: `maxTurns: 6`
+- implementation: `maxTurns: 12`
+
+Codex dispatch does not currently expose an equivalent per-agent turn cap.
+Use a narrow completion contract and stop or close the agent after it returns.
+
 ## Routing
 
 | Workload | Claude Code | Codex |
@@ -33,6 +42,14 @@ Luna.
 Do not use the cheapest tier for a task whose ambiguity will create repeated
 tool loops. Start reviewers and implementers working from prose at the
 Sonnet/Terra tier. Small, scoped re-reviews may use Haiku/Luna.
+
+## Stable prompt prefix
+
+Put the reusable role, rules, rubric, and output contract first. Put task names,
+paths, SHAs, findings, and other changing values at the end. Keep the static
+prefix byte-for-byte stable across dispatches when possible so provider prompt
+caching can reuse it. Caching lowers cost; short output contracts and turn caps
+reduce actual generated tokens.
 
 Official references:
 

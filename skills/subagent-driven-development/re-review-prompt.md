@@ -13,33 +13,18 @@ Subagent (general-purpose):
   model: [MODEL — REQUIRED: choose per SKILL.md Model Selection; an omitted
          model silently inherits the session's most expensive one]
   [EFFORT_FIELD]: medium [REQUIRED: Claude uses effort; Codex uses reasoning_effort]
+  [MAX_TURNS_FIELD]: 4 [Claude only: use maxTurns; omit in Codex]
   prompt: |
     You are re-reviewing one task's fix round. A previous review produced
     findings; an implementer has attempted to fix them. Your job is to
     verdict each finding and inspect the fix diff — nothing else.
 
-    ## The Task
+    ## Input Handling
 
-    Read the task brief: [BRIEF_FILE]
-
-    ## The Findings Under Verification
-
-    [FINDINGS]
-
-    ## The Fix
-
-    Read the implementer's report (fix reports are appended at the end):
-    [REPORT_FILE]
-
-    **Fix base:** [FIX_BASE_SHA] (the head the previous review saw)
-    **Head:** [HEAD_SHA]
-    **Diff file:** [DIFF_FILE]
-
-    Read the diff file once — it contains the fix commits, a stat summary,
-    and the fix diff with surrounding context. Do not re-run git commands.
-    If the diff file is missing, fetch the diff yourself:
-    `git diff --stat [FIX_BASE_SHA]..[HEAD_SHA]` and
-    `git diff [FIX_BASE_SHA]..[HEAD_SHA]`.
+    Read the task brief, findings, implementer report, and diff file listed
+    in Inputs. The diff file contains the current working-tree status and
+    tracked/untracked diff. Do not re-run git commands. If the diff file is
+    missing, report that the re-review cannot proceed.
 
     Your review is read-only on this checkout. Do not mutate the working
     tree, the index, HEAD, or branch state in any way.
@@ -65,31 +50,23 @@ Subagent (general-purpose):
 
     ## Output Format
 
-    Your final message is the report itself: begin directly with the first
-    finding's verdict. Every line is a verdict, a finding with file:line,
-    or a check you ran — no preamble, no process narration.
+    If all findings are addressed and there is no new Critical/Important
+    breakage, return exactly:
+    `PASS`
 
-    ### Finding Verdicts
+    Otherwise return only:
+    - each open finding — `NOT ADDRESSED`, with file:line evidence
+    - new breakage — severity, file:line, defect
+    - out-of-scope observations only when present
 
-    For each finding in The Findings Under Verification, in order:
-    - **[finding one-liner]** — ADDRESSED | NOT ADDRESSED, with file:line
-      evidence. "Attempted" is not addressed: the specific defect must no
-      longer exist.
+    No addressed-finding recap, empty sections, preamble, or closing summary.
 
-    ### New Breakage in the Fix Diff
+    ## Inputs
 
-    Anything the fix itself broke or introduced, with severity
-    (Critical/Important/Minor) and file:line. "None" if clean.
-
-    ### Out-of-Scope Observations
-
-    Issues you noticed entirely outside the fix diff. Non-blocking; the
-    controller ledgers these for the final review. "None" if none.
-
-    ### Verdict
-
-    **Fix round:** [All findings addressed, no new Critical/Important
-    breakage | Findings remain open] — list the open ones.
+    **Task brief:** [BRIEF_FILE]
+    **Findings:** [FINDINGS]
+    **Implementer report:** [REPORT_FILE]
+    **Diff file:** [DIFF_FILE]
 ```
 
 **Placeholders:**
@@ -99,9 +76,6 @@ Subagent (general-purpose):
 - `[FINDINGS]` — the Critical/Important findings and spec gaps from the
   previous review, copied verbatim, one per bullet
 - `[REPORT_FILE]` — the implementer's report file (fix reports appended)
-- `[FIX_BASE_SHA]` — the head the previous review saw
-- `[HEAD_SHA]` — current commit
-- `[DIFF_FILE]` — the path `scripts/review-package PLAN_FILE FIX_BASE HEAD` printed
+- `[DIFF_FILE]` — the path `scripts/review-package PLAN_FILE` printed
 
-**Re-reviewer returns:** per-finding verdicts (ADDRESSED / NOT ADDRESSED),
-new breakage in the fix diff, out-of-scope observations, and a round verdict.
+**Re-reviewer returns:** `PASS`, or remaining findings and new breakage only

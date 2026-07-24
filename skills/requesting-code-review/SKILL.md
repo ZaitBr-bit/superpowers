@@ -12,9 +12,13 @@ Dispatch a code reviewer subagent to catch issues before they cascade. The revie
 ## When to Request Review
 
 **Mandatory:**
-- After each task in subagent-driven development
+- After each medium- or high-risk task in subagent-driven development
 - After completing major feature
 - Before merge to main
+
+Low-risk tasks may omit the independent per-task reviewer only when they meet
+the documented risk gate; they remain covered by the mandatory final
+whole-branch review.
 
 **Optional but valuable:**
 - When stuck (fresh perspective)
@@ -23,10 +27,14 @@ Dispatch a code reviewer subagent to catch issues before they cascade. The revie
 
 ## How to Request
 
-**1. Capture the git diff:**
+**1. Write the git diff to an artifact:**
 ```bash
-DIFF=$(git diff --no-color)
+mkdir -p .superpowers/reviews
+DIFF_FILE=".superpowers/reviews/review-$(git rev-parse --short HEAD).diff"
+git diff --no-color > "$DIFF_FILE"
 ```
+
+Pass the path, not the diff text. The diff stays out of the controller context.
 
 **2. Dispatch code reviewer subagent:**
 
@@ -35,7 +43,7 @@ Dispatch a `general-purpose` subagent, filling the template at [code-reviewer.md
 **Placeholders:**
 - `{DESCRIPTION}` - Brief summary of what you built
 - `{PLAN_OR_REQUIREMENTS}` - What it should do
-- `{DIFF}` - Git diff output
+- `{DIFF_FILE}` - Path to the git diff artifact
 
 **3. Act on feedback:**
 - Fix Critical issues immediately
@@ -50,19 +58,17 @@ Dispatch a `general-purpose` subagent, filling the template at [code-reviewer.md
 
 You: Let me request code review before proceeding.
 
-DIFF=$(git diff --no-color)
+[Write git diff to DIFF_FILE]
 
 [Dispatch code reviewer subagent]
   DESCRIPTION: Added verifyIndex() and repairIndex() with 4 issue types
   PLAN_OR_REQUIREMENTS: Task 2 from docs/superpowers/plans/deployment-plan.md
-  DIFF: [git diff output]
+  DIFF_FILE: [.superpowers/reviews/review-<sha>.diff]
 
 [Subagent returns]:
-  Strengths: Clean architecture, behavior matches the requirement
-  Issues:
-    Important: Missing progress indicators
-    Minor: Magic number (100) for reporting interval
-  Assessment: Ready to proceed
+  VERDICT: WITH FIXES
+  Important, src/index.ts:41, missing progress indicators
+  Minor, src/index.ts:19, reporting interval is a magic number
 
 You: [Fix progress indicators]
 [Continue to Task 3]
@@ -78,7 +84,7 @@ You: [Fix progress indicators]
 ## Red Flags
 
 **Never:**
-- Skip review because "it's simple"
+- Skip a required review because "it's simple"
 - Ignore Critical issues
 - Proceed with unfixed Important issues
 - Argue with valid technical feedback

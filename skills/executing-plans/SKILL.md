@@ -16,7 +16,8 @@ Load plan, review critically, execute all tasks, report when complete.
 ## The Process
 
 ### Step 1: Load and Review Plan
-1. Ensure an isolated workspace: use superpowers:using-git-worktrees to create one or verify the existing one
+1. Confirm the current directory and branch with read-only git commands; stay
+   there unless the user explicitly requested a new branch or worktree
 2. Read plan file
 3. Review critically - identify any questions or concerns about the plan
 4. If concerns: Raise them with your human partner before starting
@@ -61,4 +62,5 @@ After all tasks complete and validation passes:
 - Don't skip validation
 - Reference skills when plan says to
 - Stop when blocked, don't guess
-- Never start implementation on main/master branch without explicit user consent
+- Work on the currently open branch, including main/master when already open
+- Never commit, create/switch branches, or create worktrees unless explicitly requested

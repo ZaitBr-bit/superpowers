@@ -5,8 +5,7 @@
 # Drill coverage: evals/scenarios/sdd-rejects-extra-features.yaml covers the
 # YAGNI enforcement subset (forbidden exports + reviewer-as-gate semantics)
 # and is stricter on that axis. This bash test additionally asserts:
-#   - >=3 git commits (initial + per-task commits, exercising SDD's
-#     commit-per-task workflow shape)
+#   - no agent-created commits (the initial fixture commit remains the only one)
 #   - >=2 Claude Code subagent dispatches via Agent or Task (drill only asserts >=1)
 #   - Claude Code task-tracking tool usage (drill makes no assertion)
 #   - test/math.test.js exists (drill relies on `npm test` succeeding)
@@ -275,13 +274,13 @@ else
 fi
 echo ""
 
-# Test 7: Git commits show proper workflow
-echo "Test 7: Git commit history..."
+# Test 7: Agent leaves changes uncommitted
+echo "Test 7: No automatic git commits..."
 commit_count=$(git -C "$TEST_PROJECT" log --oneline | wc -l)
-if [ "$commit_count" -gt 2 ]; then  # Initial + at least 2 task commits
-    echo "  [PASS] Multiple commits created ($commit_count total)"
+if [ "$commit_count" -eq 1 ] && [ -n "$(git -C "$TEST_PROJECT" status --porcelain)" ]; then
+    echo "  [PASS] Initial commit unchanged; implementation remains uncommitted"
 else
-    echo "  [FAIL] Too few commits ($commit_count, expected >2)"
+    echo "  [FAIL] Expected exactly one fixture commit and uncommitted changes"
     FAILED=$((FAILED + 1))
 fi
 echo ""
