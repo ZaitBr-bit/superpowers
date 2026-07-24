@@ -7,43 +7,34 @@ description: Use when implementation is complete, validation passes, and you nee
 
 ## Overview
 
-Guide completion of development work by presenting clear options and handling chosen workflow.
-
 **Core principle:** Verify validation → Present options → Execute choice.
 
 **Announce at start:** "I'm using the finishing-a-development-branch skill to complete this work."
 
-## The Process
+## Step 1: Verify Tests
 
-### Step 1: Verify Validation
-
-**Before presenting options, verify the requested validation passes:**
-
-```bash
 # Run the project's lightweight validation
 lint / typecheck / build / focused smoke check
-```
+
+**If tests fail**, report the failures and stop — the menu comes after a green suite:
 
 **If validation fails:**
 ```
 Validation failing (<N> issues). Must fix before completing:
 
 [Show failures]
-
-Cannot proceed with merge/PR until validation passes.
 ```
 
-Stop. Don't proceed to Step 2.
+**If tests pass:** continue to Step 2.
 
-**If validation passes:** Continue to Step 2.
-
-### Step 2: Detect Environment
-
-**Determine workspace state before presenting options:**
+## Step 2: Detect Environment
 
 ```bash
 GIT_DIR=$(cd "$(git rev-parse --git-dir)" 2>/dev/null && pwd -P)
 GIT_COMMON=$(cd "$(git rev-parse --git-common-dir)" 2>/dev/null && pwd -P)
+# Capture now, while still inside the workspace — Step 5 changes directory
+# before cleanup (Step 6) needs this value
+WORKTREE_PATH=$(git rev-parse --show-toplevel)
 ```
 
 This determines which menu to show and how cleanup works:
@@ -63,18 +54,16 @@ Implementation complete. Changes are uncommitted in the working directory.
 Options:
 
 1. Keep as-is (I'll handle git operations later)
-2. Discard this work
-   This will permanently discard all uncommitted changes.
-3. Stage changes manually
-   Suggested steps:
-   a. Review the diff: git diff
-   b. Stage files: git add [files]
-   c. Commit: git commit -m "your message"
-   d. Push/create PR manually
+2. Other option
+	User describe
 
-Which option? (1/2/3)
+Which option? (1/2)
 
-**Don't add explanation** - keep options concise.
+Present the menu exactly as written — concise, with every option coming
+from the list above. Discarding the work happens only in response to your
+human partner explicitly asking for it (see "If your human partner asks to
+discard the work" below). Wait for their answer; the integration decision
+is theirs.
 
 ### Step 4: Execute Choice
 
@@ -84,72 +73,14 @@ Report: "Keeping changes in working directory. Branch preserved."
 
 No git commands executed.
 
-#### Option 2: Discard
-
-**Confirm first:**
-```
-This will permanently discard all uncommitted changes.
-Type 'discard' to confirm.
-```
-
-Wait for exact confirmation.
-
-If confirmed:
-```bash
-git reset --hard
-```
-
-Report: "All uncommitted changes have been discarded."
-
-#### Option 3: Stage-manual
-
-Report:
-```
-You can stage and commit the changes manually. Suggested steps:
-1. Review the diff: git diff
-2. Stage files: git add [files] (or git add . to stage all)
-3. Commit: git commit -m "your message"
-4. Push and create PR: git push && gh pr create (or use your platform)
-```
-
-No automatic git commands executed.
+#### Option 2: Other
+Let user describre what to do
 
 
 
-## Quick Reference
 
-| Option | Action |
-|--------|--------|
-| 1. Keep as-is | Preserve changes in working directory |
-| 2. Discard | `git reset --hard` to discard all changes |
-| 3. Stage-manual | User stages/commits manually (guidance provided) |
 
-## Common Mistakes
 
-**Skipping validation**
-- **Problem:** Discard broken code inadvertently
-- **Fix:** Always verify validation before offering options
 
-**Open-ended questions**
-- **Problem:** "What should I do next?" is ambiguous
-- **Fix:** Present exactly the three structured options
 
-**No confirmation for discard**
-- **Problem:** Accidentally delete work
-- **Fix:** Require typed "discard" confirmation
 
-## Red Flags
-
-**Never:**
-- Proceed with failing validation
-- Attempt to merge, push, or create PR automatically
-- Delete work without confirmation
-- Run `git reset --hard` without explicit typed "discard" confirmation
-- Instruct user to commit (agent must not commit in read-only mode)
-
-**Always:**
-- Verify validation before offering options
-- Detect environment before presenting menu
-- Present exactly three options: Keep, Discard, Stage-manual
-- Get typed confirmation for Discard (Option 2)
-- Leave all other git operations to the user

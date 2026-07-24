@@ -7,6 +7,7 @@
           {
             "type": "command",
             "command": "cmd /c \"${CLAUDE_PLUGIN_ROOT}\\hooks\\run-hook.cmd session-start\"",
+            "shell": "bash",
             "async": false
           }
         ]

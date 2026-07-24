@@ -5,7 +5,7 @@ description: Use when completing tasks, implementing major features, or before m
 
 # Requesting Code Review
 
-Dispatch a code reviewer subagent to catch issues before they cascade. The reviewer gets precisely crafted context for evaluation — never your session's history. This keeps the reviewer focused on the work product, not your thought process, and preserves your own context for continued work.
+Dispatch a code reviewer subagent to catch issues before they cascade. The reviewer gets precisely crafted context for evaluation — never your session's history.
 
 **Core principle:** Review early, review often.
 
@@ -30,7 +30,7 @@ DIFF=$(git diff --no-color)
 
 **2. Dispatch code reviewer subagent:**
 
-Use Task tool with `general-purpose` type, fill template at `code-reviewer.md`
+Dispatch a `general-purpose` subagent, filling the template at [code-reviewer.md](code-reviewer.md)
 
 **Placeholders:**
 - `{DESCRIPTION}` - Brief summary of what you built
@@ -68,20 +68,12 @@ You: [Fix progress indicators]
 [Continue to Task 3]
 ```
 
-## Integration with Workflows
+## Common Rationalizations
 
-**Subagent-Driven Development:**
-- Review after EACH task
-- Catch issues before they compound
-- Fix before moving to next task
-
-**Executing Plans:**
-- Review after each task or at natural checkpoints
-- Get feedback, apply, continue
-
-**Ad-Hoc Development:**
-- Review before merge
-- Review when stuck
+| Excuse | Reality |
+|--------|---------|
+| "I'll just review the diff myself instead of dispatching a reviewer" | You're the coordinator — reviewing the diff inline burns the context window you need to keep driving the work. Dispatch a reviewer subagent: the diff and the evaluation live in its context, and only the findings come back to you. |
+| "The reviewer needs my whole session history to understand the change" | Hand it precisely crafted context, never your session's history. That keeps the reviewer on the work product, not your thought process. |
 
 ## Red Flags
 
@@ -106,4 +98,4 @@ Center the review on whether the change:
 - Keeps the risk of regressions low
 - Includes any lightweight validation needed to support the change
 
-See template at: requesting-code-review/code-reviewer.md
+See template at: [code-reviewer.md](code-reviewer.md)
