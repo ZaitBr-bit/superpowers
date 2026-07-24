@@ -1,122 +1,67 @@
 ---
 name: using-git-worktrees
-description: Use when starting feature work that needs isolation from current workspace or before executing implementation plans - ensures an isolated workspace exists via native tools or git worktree fallback
+description: Use only when the user explicitly requests a new branch, worktree, or isolated workspace
 ---
 
 # Using Git Worktrees
 
-## Overview
+## Non-Negotiable Authorization
 
-Work happens directly in the current directory. Worktree creation is disabled in read-only mode.
+Development stays in the currently open branch and working directory by
+default. Never create or switch branches, create a worktree, or commit changes
+unless the user explicitly requests that exact git operation.
 
-**Core principle:** Detect current workspace state for information. Proceed in-place without creating isolated workspaces.
+Requesting implementation, executing a plan, isolation, or "feature work" is
+not authorization to create a branch or worktree. If isolation would materially
+help but was not requested, explain why and ask before changing git state.
 
-**Announce at start:** "I'm using the using-git-worktrees skill to set up an isolated workspace."
+**Announce at start:** "I'm using the using-git-worktrees skill because you
+explicitly requested an isolated branch or worktree."
 
-## Step 0: Detect Existing Isolation
+## Step 1: Confirm Scope
 
-**Before creating anything, check if you are already in an isolated workspace.**
+Before mutation, confirm the request identifies:
 
-```bash
-GIT_DIR=$(cd "$(git rev-parse --git-dir)" 2>/dev/null && pwd -P)
-GIT_COMMON=$(cd "$(git rev-parse --git-common-dir)" 2>/dev/null && pwd -P)
-BRANCH=$(git branch --show-current)
-```
+- whether to create a branch, a worktree, or both;
+- the branch name, or permission for you to propose one;
+- the worktree location, when applicable.
 
-**Submodule guard:** `GIT_DIR != GIT_COMMON` is also true inside git submodules. Before concluding "already in a worktree," verify you are not in a submodule:
+If any target is ambiguous, ask. Do not infer authorization from a plan or
+another skill.
 
-```bash
-# If this returns a path, you're in a submodule, not a worktree — treat as normal repo
-git rev-parse --show-superproject-working-tree 2>/dev/null
-```
+## Step 2: Inspect Current State
 
-**If `GIT_DIR != GIT_COMMON` (and not a submodule):** You are already in a linked worktree. Skip to Step 1 (Project Setup). Do NOT create another worktree.
-
-Report with branch state:
-- On a branch: "Already in isolated workspace at `<path>` on branch `<name>`."
-- Detached HEAD: "Already in isolated workspace at `<path>` (detached HEAD, externally managed). Branch creation needed at finish time."
-
-**If `GIT_DIR == GIT_COMMON` (or in a submodule):** You are in a normal repo checkout.
-
-In read-only mode, worktree creation is disabled. Proceed directly to Step 1 (Project Setup) in the current directory.
-
-
-## Step 1: Project Setup (in-place)
-
-Execute project setup directly in the current directory (read-only mode):
+Use read-only commands:
 
 ```bash
-# Node.js
-if [ -f package.json ]; then npm install; fi
-
-# Rust
-if [ -f Cargo.toml ]; then cargo build; fi
-
-# Python
-if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
-if [ -f pyproject.toml ]; then poetry install; fi
-
-# Go
-if [ -f go.mod ]; then go mod download; fi
+git status --short --branch
+git rev-parse --show-toplevel
+git branch --show-current
+git worktree list
 ```
 
-## Step 2: Verify Clean Baseline (in current directory)
+Preserve all existing changes. If the requested operation could conflict with
+dirty files or an existing path/branch, report that before proceeding.
 
-Run lightweight readiness checks to ensure the current directory starts clean:
+## Step 3: Execute Only the Requested Operation
 
-```bash
-# Examples - use project-appropriate command when available
-lint
-typecheck
-build
-focused smoke check
-```
+Create or switch only what the user authorized. Worktree creation does not
+authorize commits, pushes, merges, or additional branches.
 
-**If readiness checks fail:** Report failures, ask whether to proceed or investigate.
+When the harness provides a native worktree action such as `EnterWorktree` or
+`WorktreeCreate`, prefer it over a shell command. Otherwise use the standard
+git operation with the exact approved branch and path.
 
-**If readiness checks pass:** Report ready.
+## Step 4: Verify
 
-### Report
-
-```
-Working directory ready at $(pwd)
-Readiness checks passed (<N> checks, 0 issues)
-Ready to implement <feature-name>
-```
-
-## Quick Reference
-
-| Situation | Action |
-|-----------|--------|
-| Already in linked worktree | Proceed in current directory |
-| In a submodule | Treat as normal repo (Step 0 guard) |
-| Readiness checks fail during baseline | Report failures + ask |
-| No package.json/Cargo.toml | Skip dependency install |
-
-## Read-Only Behavior
-
-In read-only mode, worktree creation is disabled. All work proceeds directly in the current directory:
-
-```
-Current directory: $(pwd)
-Branch: $(git branch --show-current)
-Running setup and verification in-place.
-```
-
-No isolated workspace is created. The user retains full control over git operations (branching, committing, merging).
-
-
+Report the resulting directory and current branch using read-only commands.
+Continue development there only if that was part of the explicit request.
 
 ## Red Flags
 
-**Never:**
-- Create a worktree in read-only mode
-- Use `git worktree add` or any worktree creation command
-- Skip baseline readiness verification
-- Proceed with failing readiness checks without asking
+Never:
 
-**Always:**
-- Run Step 0 detection first (to know current isolation state)
-- Work in the current directory without creating branches or commits
-- Auto-detect and run project setup
-- Verify clean readiness baseline
+- create a branch or worktree as an automatic setup step;
+- switch away from the currently open branch without explicit permission;
+- treat a request to implement as permission to alter git topology;
+- commit, push, merge, rebase, or discard changes without explicit permission.

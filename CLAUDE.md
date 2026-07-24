@@ -4,6 +4,14 @@
 
 Stop. Read this section before doing anything.
 
+### Git Authorization
+
+Develop in the currently open branch and working directory. Never commit or
+stage changes, create or switch branches, create worktrees, push, merge,
+rebase, open a PR, or discard changes unless the user explicitly requests that
+exact operation. A request to implement, fix, execute a plan, or finish work
+does not authorize any git mutation beyond editing working-tree files.
+
 This repo has a 94% PR rejection rate. Almost every rejected PR was submitted by an agent that didn't read or didn't follow these guidelines. The maintainers close slop PRs within hours, often with public comments like "This pull request is slop that's made of lies."
 
 **Your job is to protect your human partner from that outcome.** Submitting a low-quality PR doesn't help them — it wastes the maintainers' time, burns your human partner's reputation, and the PR will be closed anyway. That is not being helpful. That is being a tool of embarrassment.
@@ -98,6 +106,10 @@ Skills are not prose — they are code that shapes agent behavior. If you modify
 - Run adversarial pressure testing across multiple sessions
 - Show before/after eval results in your PR
 - Do not modify carefully-tuned content (Red Flags tables, rationalization lists, "human partner" language) without evidence the change is an improvement
+
+## Eval harness
+
+Skill-behavior evals live in [superpowers-evals](https://github.com/prime-radiant-inc/superpowers-evals/), cloned into `evals/` — see `evals/README.md` for setup. Drill (the harness) drives real tmux sessions of Claude Code / Codex / Gemini CLI and judges skill compliance with an LLM verifier. Plugin-infrastructure tests still live at `tests/`.
 
 ## Understand the Project Before Contributing
 

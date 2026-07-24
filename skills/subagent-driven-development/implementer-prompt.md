@@ -3,18 +3,15 @@
 Use this template when dispatching an implementer subagent.
 
 ```
-Task tool (general-purpose):
+Subagent (general-purpose):
   description: "Implement Task N: [task name]"
+  model: [MODEL — REQUIRED: choose per SKILL.md Model Selection; an omitted
+         model silently inherits the session's most expensive one]
+  [EFFORT_FIELD]: medium [REQUIRED: Claude uses effort; Codex uses reasoning_effort]
+  [MAX_TURNS_FIELD]: 12 [Claude only: use maxTurns; omit in Codex]
   prompt: |
-    You are implementing Task N: [task name]
-
-    ## Task Description
-
-    [FULL TEXT of task from plan - paste it here, don't make subagent read file]
-
-    ## Context
-
-    [Scene-setting: where this fits, dependencies, architectural context]
+    You are an implementation subagent. Complete the supplied task, validate
+    it, and leave a compact handoff.
 
     ## Before You Begin
 
@@ -39,6 +36,13 @@ Task tool (general-purpose):
 
     **While you work:** If you encounter something unexpected or unclear, **ask questions**.
     It's always OK to pause and clarify. Don't guess or make assumptions.
+
+    While iterating, run the focused test for what you're changing; run the
+    full suite once before reporting, not after every edit.
+
+    Do not stage or commit changes, create/switch branches, or create
+    worktrees. Work only in the directory and branch provided by the
+    controller.
 
     ## Code Organization
 
@@ -93,23 +97,55 @@ Task tool (general-purpose):
     - Do tests actually verify behavior (not just mock behavior)?
     - Did I follow TDD if required?
     - Are tests comprehensive?
+    - Is the test output pristine (no stray warnings or noise)?
 
     **File changes:**
     - List all files you created or modified.
 
     If you find issues during self-review, fix them now before reporting.
 
+    ## After Review Findings
+
+    If a required task review finds issues, you will be resumed with the findings.
+    Fix them, re-run the tests that cover the amended code, and append a fix
+    report to your report file: what you changed, the covering tests you
+    ran, the command, and the output. Reviewers will not re-run tests for
+    you — your report is the test evidence. Then reply with the same short
+    status contract as your first report.
+
     ## Report Format
 
-    When done, report:
-    - **Status:** DONE | DONE_WITH_CONCERNS | BLOCKED | NEEDS_CONTEXT
+    ## Output Format
+
+    Write your full report to the report file listed in Inputs:
     - What you implemented (or what you attempted, if blocked)
     - What you tested and test results
+    - **TDD Evidence** (if TDD was required for this task):
+      - RED: command run, relevant failing output before implementation, and why the failure was expected
+      - GREEN: command run and relevant passing output after implementation
     - Files changed
     - Self-review findings (if any)
     - Any issues or concerns
 
+    Then report back with ONLY (under 15 lines — the detail lives in the
+    report file):
+    - **Status:** DONE | DONE_WITH_CONCERNS | BLOCKED | NEEDS_CONTEXT
+    - Changed files
+    - One-line test summary (e.g. "14/14 passing, output pristine")
+    - Your concerns, if any
+    - The report file path
+
+    If BLOCKED or NEEDS_CONTEXT, put the specifics in the final message
+    itself — the controller acts on it directly.
+
     Use DONE_WITH_CONCERNS if you completed the work but have doubts about correctness.
     Use BLOCKED if you cannot complete the task. Use NEEDS_CONTEXT if you need
     information that wasn't provided. Never silently produce work you're unsure about.
+
+    ## Inputs
+
+    **Task:** Task N: [task name]
+    **Task brief:** [BRIEF_FILE] — read this first; it is the complete task text
+    **Context:** [Scene-setting, dependencies, and earlier interfaces]
+    **Report file:** [REPORT_FILE]
 ```

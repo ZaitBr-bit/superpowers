@@ -1,6 +1,16 @@
 #!/usr/bin/env bash
 # Integration Test: subagent-driven-development workflow
 # Actually executes a plan and verifies the new workflow behaviors
+#
+# Drill coverage: evals/scenarios/sdd-rejects-extra-features.yaml covers the
+# YAGNI enforcement subset (forbidden exports + reviewer-as-gate semantics)
+# and is stricter on that axis. This bash test additionally asserts:
+#   - no agent-created commits (the initial fixture commit remains the only one)
+#   - >=2 Claude Code subagent dispatches via Agent or Task (drill only asserts >=1)
+#   - Claude Code task-tracking tool usage (drill makes no assertion)
+#   - test/math.test.js exists (drill relies on `npm test` succeeding)
+#   - analyze-token-usage.py token-budget telemetry
+# Kept until those assertions are added to drill or explicitly retired.
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
@@ -213,13 +223,13 @@ else
 fi
 echo ""
 
-# Test 3: TodoWrite was used for tracking
+# Test 3: Claude Code task-tracking tool was used
 echo "Test 3: Task tracking..."
-todo_count=$(grep -c '"name":"TodoWrite"' "$SESSION_FILE" || echo "0")
+todo_count=$(grep -cE '"name":"(TodoWrite|TaskCreate|TaskUpdate|TaskList|TaskGet)"' "$SESSION_FILE" || echo "0")
 if [ "$todo_count" -ge 1 ]; then
-    echo "  [PASS] TodoWrite used $todo_count time(s) for task tracking"
+    echo "  [PASS] Task tracking used $todo_count time(s)"
 else
-    echo "  [FAIL] TodoWrite not used"
+    echo "  [FAIL] No Claude Code task-tracking tool used"
     FAILED=$((FAILED + 1))
 fi
 echo ""
@@ -264,13 +274,13 @@ else
 fi
 echo ""
 
-# Test 7: Git commits show proper workflow
-echo "Test 7: Git commit history..."
+# Test 7: Agent leaves changes uncommitted
+echo "Test 7: No automatic git commits..."
 commit_count=$(git -C "$TEST_PROJECT" log --oneline | wc -l)
-if [ "$commit_count" -gt 2 ]; then  # Initial + at least 2 task commits
-    echo "  [PASS] Multiple commits created ($commit_count total)"
+if [ "$commit_count" -eq 1 ] && [ -n "$(git -C "$TEST_PROJECT" status --porcelain)" ]; then
+    echo "  [PASS] Initial commit unchanged; implementation remains uncommitted"
 else
-    echo "  [FAIL] Too few commits ($commit_count, expected >2)"
+    echo "  [FAIL] Expected exactly one fixture commit and uncommitted changes"
     FAILED=$((FAILED + 1))
 fi
 echo ""

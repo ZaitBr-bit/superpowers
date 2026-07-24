@@ -12,7 +12,7 @@ digraph STYLE_GUIDE {
         "Take an action" [shape=box];
 
         // Commands are plaintext
-        "git commit -m 'msg'" [shape=plaintext];
+        "git diff --check" [shape=plaintext];
 
         // States are ellipses
         "Current state" [shape=ellipse];
@@ -71,7 +71,7 @@ digraph STYLE_GUIDE {
         // Actions start with verb
         "Write the test";
         "Search for patterns";
-        "Commit changes";
+        "Validate changes";
         "Ask for help";
 
         // Commands are literal

@@ -9,13 +9,12 @@ description: Use when you have a spec or requirements for a multi-step task, bef
 
 Write comprehensive implementation plans assuming the engineer has zero context for our codebase and questionable taste. Document everything they need to know: which files to touch for each task, code, validation, docs they might need to check, how to validate it. Give them the whole plan as bite-sized tasks. DRY. YAGNI.
 
-**Document style:** Write plan prose in caveman format — drop articles/filler/hedging, fragments OK, short synonyms. Preserve EXACTLY: code blocks, inline code, commands, file paths, technical terms, version numbers.
-
 Assume they are a skilled developer, but know almost nothing about our toolset or problem domain. Assume they don't know good validation design very well.
 
 **Announce at start:** "I'm using the writing-plans skill to create the implementation plan."
 
-**Context:** If working in an isolated worktree, it should have been created via the `superpowers:using-git-worktrees` skill at execution time.
+**Context:** Execution stays in the currently open branch and directory.
+Mention a new branch or worktree only when the user explicitly requested one.
 **Save plans to:** `docs/superpowers/plans/YYYY-MM-DD-<feature-name>.md`
 - (User preferences for plan location override this default)
 
@@ -33,6 +32,23 @@ Before defining tasks, map out which files will be created or modified and what 
 - In existing codebases, follow established patterns. If the codebase uses large files, don't unilaterally restructure - but if a file you're modifying has grown unwieldy, including a split in the plan is reasonable.
 
 This structure informs the task decomposition. Each task should produce self-contained changes that make sense independently.
+
+## Task Right-Sizing
+
+A task is the smallest unit that carries its own test cycle and a distinct
+risk decision. When drawing task boundaries: fold setup,
+configuration, scaffolding, and documentation steps into the task whose
+deliverable needs them; split only where a reviewer could meaningfully
+reject one task while approving its neighbor. Each task ends with an
+independently testable deliverable.
+
+## Task Risk
+
+Assign each task `low`, `medium`, or `high` using
+[the shared risk criteria](../subagent-driven-development/references/risk-classification.md).
+Low risk requires every listed condition; medium is the default when
+uncertain. The execution controller reassesses risk from the actual diff and
+may promote it before completion.
 
 ## Bite-Sized Task Granularity
 
@@ -57,6 +73,13 @@ This structure informs the task decomposition. Each task should produce self-con
 
 **Tech Stack:** [Key technologies/libraries]
 
+## Global Constraints
+
+[The spec's project-wide requirements — version floors, dependency limits,
+naming and copy rules, platform requirements — one line each, with exact
+values copied verbatim from the spec. Every task's requirements implicitly
+include this section.]
+
 ---
 ```
 
@@ -65,12 +88,21 @@ This structure informs the task decomposition. Each task should produce self-con
 ````markdown
 ### Task N: [Component Name]
 
+**Risk:** low | medium | high - [observable reason]
+
 **Files:**
 - Create: `exact/path/to/file.py`
 - Modify: `exact/path/to/existing.py:123-145`
 - Validate: `scripts/exact/path/to/check.py`
 
 - [ ] **Step 1: Implement the smallest useful change**
+
+**Interfaces:**
+- Consumes: [what this task uses from earlier tasks — exact signatures]
+- Produces: [what later tasks rely on — exact function names, parameter
+  and return types. A task's implementer sees only their own task; this
+  block is how they learn the names and types neighboring tasks use.]
+
 
 ```python
 def function(input):
@@ -104,12 +136,6 @@ Every step must contain the actual content an engineer needs. These are **plan f
 - Steps that describe what to do without showing how (code blocks required for code steps)
 - References to types, functions, or methods not defined in any task
 
-## Remember
-- Exact file paths always
-- Complete code in every step — if a step changes code, show the code
-- Exact commands with expected output
-- DRY, YAGNI, validation-first
-
 ## Self-Review
 
 After writing the complete plan, look at the spec with fresh eyes and check the plan against it. This is a checklist you run yourself — not a subagent dispatch.
@@ -130,25 +156,30 @@ After saving the plan, offer execution choice:
 
 **Decision logic — MANDATORY:**
 1. If the user has **already provided** an execution preference in the current context, **do not ask again**. Reuse that choice.
-2. If no explicit preference exists, ask via `vscode_askQuestions`.
-3. After a choice is known (new or reused), **continue immediately in the same turn** by invoking the selected execution skill and starting Task 1. Do not stop with messages like "if you want, I can continue".
-4. Any follow-up question needed during execution must also use `vscode_askQuestions` (never inline chat questions).
+2. If no explicit preference exists, compute the recommended default:
+   - 1-2 mechanical tasks with clear requirements and limited file scope:
+     recommend Inline Execution. A subagent would cost more context than it saves.
+   - 3+ tasks, integration work, or tasks needing isolated context: recommend
+     Subagent-Driven.
+3. Ask via `vscode_askQuestions`, placing the computed recommendation first.
+4. After a choice is known (new or reused), **continue immediately in the same turn** by invoking the selected execution skill and starting Task 1. Do not stop with messages like "if you want, I can continue".
+5. Any follow-up question needed during execution must also use `vscode_askQuestions` (never inline chat questions).
 
 Example `vscode_askQuestions` call:
 ```
 header: "Execution approach"
 question: "Plan complete and saved to docs/superpowers/plans/<filename>.md. Which execution approach do you prefer?"
 options:
-  - label: "Subagent-Driven (recommended)"
-    description: "Dispatch a fresh subagent per task, review between tasks, fast iteration"
+  - label: "[Computed recommendation]"
+    description: "[Why this plan's size and coupling fit this execution mode]"
     recommended: true
-  - label: "Inline Execution"
-    description: "Execute tasks in this session using executing-plans, batch execution with checkpoints"
+  - label: "[Other execution mode]"
+    description: "[Its trade-off for this plan]"
 ```
 
 **If Subagent-Driven chosen:**
 - **REQUIRED SUB-SKILL:** Use superpowers:subagent-driven-development
-- Fresh subagent per task + two-stage review
+- Fresh subagent per task + risk-based task review + mandatory final review
 
 **Operational mapping (VS Code agent):**
 - "Subagent-Driven" means: invoke `runSubagent` immediately in the same turn with Task 1 scope.

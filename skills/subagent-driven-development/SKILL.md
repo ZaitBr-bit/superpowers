@@ -5,15 +5,27 @@ description: Use when executing implementation plans with independent tasks in t
 
 # Subagent-Driven Development
 
-Execute plan by dispatching fresh subagent per task, with two-stage review after each: spec compliance review first, then code quality review.
+Execute a plan with a fresh implementer subagent per task, risk-based task
+reviews, and a mandatory broad whole-branch review at the end.
 
-**Why subagents:** You delegate tasks to specialized agents with isolated context. By precisely crafting their instructions and context, you ensure they stay focused and succeed at their task. They should never inherit your session's context or history — you construct exactly what they need. This also preserves your own context for coordination work.
+**Why subagents:** Fresh agents receive deliberately scoped context instead of
+session history, keeping them focused and preserving controller context.
 
-**Core principle:** Fresh subagent per task + two-stage review (spec then quality) = high quality, fast iteration
+**Core principle:** Fresh subagent per task + review proportional to risk +
+mandatory broad final review = high quality without unnecessary dispatches
+
+**Narration:** between tool calls, narrate at most one short line — the
+ledger and the tool results carry the record.
 
 **Continuous execution:** Do not pause to check in with your human partner between tasks. Execute all tasks from the plan without stopping. The only reasons to stop are: BLOCKED status you cannot resolve, ambiguity that genuinely prevents progress, or all tasks complete. "Should I continue?" prompts and progress summaries waste their time — they asked you to execute the plan, so execute it.
 
 ## When to Use
+
+Default to `executing-plans` inline for plans containing only 1-2 mechanical,
+clearly specified tasks with limited file scope. Use this skill when isolation
+or coordination will save more context than spawning costs: normally 3+ tasks,
+integration work, or substantial independent context. An explicit user choice
+for SDD overrides this routing threshold.
 
 ```dot
 digraph when_to_use {
@@ -36,78 +48,136 @@ digraph when_to_use {
 **vs. Executing Plans (parallel session):**
 - Same session (no context switch)
 - Fresh subagent per task (no context pollution)
-- Two-stage review after each task: spec compliance first, then code quality
+- Independent review for medium/high-risk tasks; broad review always at the end
 - Faster iteration (no human-in-loop between tasks)
 
 ## The Process
 
-```dot
-digraph process {
-    rankdir=TB;
+The operational steps below are authoritative. Read
+[references/process-diagram.md](references/process-diagram.md) only when a
+visual overview is useful.
 
-    subgraph cluster_per_task {
-        label="Per Task";
-        "Dispatch implementer subagent (./implementer-prompt.md)" [shape=box];
-        "Implementer subagent asks questions?" [shape=diamond];
-        "Answer questions, provide context" [shape=box];
-        "Implementer subagent implements, validates, self-reviews" [shape=box];
-        "Dispatch spec reviewer subagent (./spec-reviewer-prompt.md)" [shape=box];
-        "Spec reviewer subagent confirms code matches spec?" [shape=diamond];
-        "Implementer subagent fixes spec gaps" [shape=box];
-        "Dispatch code quality reviewer subagent (./code-quality-reviewer-prompt.md)" [shape=box];
-        "Code quality reviewer subagent approves?" [shape=diamond];
-        "Implementer subagent fixes quality issues" [shape=box];
-        "Mark task complete in TodoWrite" [shape=box];
-    }
+## Setup
 
-    "Read plan, extract all tasks with full text, note context, create TodoWrite" [shape=box];
-    "More tasks remain?" [shape=diamond];
-    "Dispatch final code reviewer subagent for entire implementation" [shape=box];
-    "Use superpowers:finishing-a-development-branch" [shape=box style=filled fillcolor=lightgreen];
+Inspect the current directory and branch with read-only git commands, then work
+there. Never commit, create or switch branches, or create worktrees unless the
+user explicitly requested that exact operation. This includes main/master:
+the currently open branch is the development branch.
 
-    "Read plan, extract all tasks with full text, note context, create TodoWrite" -> "Dispatch implementer subagent (./implementer-prompt.md)";
-    "Dispatch implementer subagent (./implementer-prompt.md)" -> "Implementer subagent asks questions?";
-    "Implementer subagent asks questions?" -> "Answer questions, provide context" [label="yes"];
-    "Answer questions, provide context" -> "Dispatch implementer subagent (./implementer-prompt.md)";
-    "Implementer subagent asks questions?" -> "Implementer subagent implements, validates, self-reviews" [label="no"];
-    "Implementer subagent implements, validates, self-reviews" -> "Dispatch spec reviewer subagent (./spec-reviewer-prompt.md)";
-    "Dispatch spec reviewer subagent (./spec-reviewer-prompt.md)" -> "Spec reviewer subagent confirms code matches spec?";
-    "Spec reviewer subagent confirms code matches spec?" -> "Implementer subagent fixes spec gaps" [label="no"];
-    "Implementer subagent fixes spec gaps" -> "Dispatch spec reviewer subagent (./spec-reviewer-prompt.md)" [label="re-review"];
-    "Spec reviewer subagent confirms code matches spec?" -> "Dispatch code quality reviewer subagent (./code-quality-reviewer-prompt.md)" [label="yes"];
-    "Dispatch code quality reviewer subagent (./code-quality-reviewer-prompt.md)" -> "Code quality reviewer subagent approves?";
-    "Code quality reviewer subagent approves?" -> "Implementer subagent fixes quality issues" [label="no"];
-    "Implementer subagent fixes quality issues" -> "Dispatch code quality reviewer subagent (./code-quality-reviewer-prompt.md)" [label="re-review"];
-    "Code quality reviewer subagent approves?" -> "Mark task complete in TodoWrite" [label="yes"];
-    "Mark task complete in TodoWrite" -> "More tasks remain?";
-    "More tasks remain?" -> "Dispatch implementer subagent (./implementer-prompt.md)" [label="yes"];
-    "More tasks remain?" -> "Dispatch final code reviewer subagent for entire implementation" [label="no"];
-    "Dispatch final code reviewer subagent for entire implementation" -> "Use superpowers:finishing-a-development-branch";
-}
-```
+Conversation memory does not survive compaction. In real sessions,
+controllers that lost their place have re-dispatched entire completed task
+sequences — the single most expensive failure observed. Track progress in
+a ledger file, not only in todos.
+
+- Each plan owns a workspace: at skill start, run this skill's
+  `scripts/sdd-workspace PLAN_FILE` — it prints the plan's git-ignored
+  directory (`<repo-root>/.superpowers/sdd/<plan-basename>/`), home to
+  every artifact for THIS plan: ledger, briefs, reports, review packages.
+  Another plan's directory is never yours to read or write.
+- Check for this plan's ledger at `<workspace>/progress.md`. If its first
+  line names your plan file, tasks with a `Task <N>: complete` line are DONE
+  — do not re-dispatch them; resume at the first task without one. A task
+  whose last line is a fix round is mid-loop: resume the loop at the next
+  round. A ledger whose first line names a different plan file — or a stray
+  ledger at the old flat path `.superpowers/sdd/progress.md` — is another
+  plan's progress: leave it in place and start your own, fresh.
+- Create the ledger with its identity as the first line:
+  `# SDD ledger — plan: <plan file path>`.
+- The ledger, reports, and current working-tree diff are the recovery map.
+  After compaction, trust those artifacts and `git status` over recollection.
+- `git clean -fdx` will destroy the workspace (it's git-ignored scratch);
+  never run it as part of this workflow.
+
+Read the plan once, note its context and Global Constraints, and create a
+todo per task.
+
+Classify every task using
+[risk-classification.md](references/risk-classification.md) and record the
+observable reason in the ledger before dispatch. Treat medium as the default
+when any low-risk condition is uncertain. A plan's proposed risk is an input,
+not a substitute for the controller's classification.
+
+Before dispatching Task 1, scan the plan once for conflicts:
+
+- tasks that contradict each other or the plan's Global Constraints
+- anything the plan explicitly mandates that the review rubric treats as a
+  defect (a test that asserts nothing, verbatim duplication of a logic block)
+
+Present everything you find to your human partner as one batched question —
+each finding beside the plan text that mandates it, asking which governs —
+before execution begins, not one interrupt per discovery mid-plan. If the
+scan is clean, proceed without comment. The review loop remains the net for
+conflicts that only emerge from implementation.
 
 ## Model Selection
 
-Use the least powerful model that can handle each role to conserve cost and increase speed.
+Before every dispatch, read and apply
+[subagent-models.md](../using-superpowers/references/subagent-models.md).
+Specify model and medium effort; on Claude also apply the role's `maxTurns`.
 
-**Mechanical implementation tasks** (isolated functions, clear specs, 1-2 files): use a fast, cheap model. Most implementation tasks are mechanical when the plan is well-specified.
+Additional SDD rules:
 
-**Integration and judgment tasks** (multi-file coordination, pattern matching, debugging): use a standard model.
+- rounds 4-5 use at least one tier above the stuck implementer;
+- final whole-branch review uses the most capable tier;
+- high-risk task reviews use the most capable tier;
+- medium-risk task reviews start at the standard tier;
+- low-risk tasks do not dispatch a task reviewer;
+- reviewers working from prose start at the standard tier;
+- scoped re-reviews and complete-code transcription may use the cheapest tier.
 
-**Architecture, design, and review tasks**: use the most capable available model.
+## The Task Loop
 
-**Task complexity signals:**
-- Touches 1-2 files with a complete spec → cheap model
-- Touches multiple files with integration concerns → standard model
-- Requires design judgment or broad codebase understanding → most capable model
+Everything you paste into a dispatch prompt — and everything a subagent
+prints back — stays resident in your context for the rest of the session
+and is re-read on every later turn. Hand artifacts over as files.
 
-## Handling Implementer Status
+### 1. Dispatch the implementer
+
+Record `git status --short` before dispatching for diagnostics only. Do not
+stage or commit task changes.
+
+- **Task brief:** before dispatching an implementer, run this skill's
+  `scripts/task-brief PLAN_FILE N` — it extracts the task's full text to a
+  uniquely named file and prints the path. Compose the dispatch so the
+  brief stays the single source of
+  requirements. Your dispatch should contain: (1) one line on where this
+  task fits in the project; (2) the brief path, introduced as "read this
+  first — it is your requirements, with the exact values to use verbatim";
+  (3) interfaces and decisions from earlier tasks that the brief cannot
+  know; (4) your resolution of any ambiguity you noticed in the brief;
+  (5) the report-file path and report contract. Exact values (numbers,
+  magic strings, signatures, test cases) appear only in the brief. Never
+  make a subagent read the whole plan file.
+- **Report file:** name the implementer's report file after the brief
+  (brief `…/task-N-brief.md` → report `…/task-N-report.md`) and put it in
+  the dispatch prompt. The implementer writes the full report there and
+  returns only status, a one-line test summary, changed files, and concerns.
+- A dispatch prompt describes one task, not the session's history. Do not
+  paste accumulated prior-task summaries ("state after Tasks 1-3") into
+  later dispatches — a real session's dispatch hit 42k chars of which 99%
+  was pasted history. A fresh subagent needs its task, the interfaces it
+  touches, and the global constraints. Nothing else.
+- If an earlier task parked a finding in the area this task touches, carry
+  a pointer to that ledger entry in the dispatch.
+- Record the implementer's agent identity from the dispatch result —
+  fix-loop rounds 1-3 resume this agent.
+- Never dispatch multiple implementation subagents in parallel (conflicts).
+
+Template: [implementer-prompt.md](implementer-prompt.md)
+
+### 2. Handle the report
 
 Implementer subagents report one of four statuses. Handle each appropriately:
 
-**DONE:** Proceed to spec compliance review.
+**DONE:** Reassess risk from the diff and report. If the low-risk gate still
+holds, verify self-review and focused validation evidence, record the gate, and
+complete without a task reviewer. Otherwise promote and continue to review.
 
-**DONE_WITH_CONCERNS:** The implementer completed the work but flagged doubts. Read the concerns before proceeding. If the concerns are about correctness or scope, address them before review. If they're observations (e.g., "this file is getting large"), note them and proceed to review.
+**DONE_WITH_CONCERNS:** The implementer completed the work but flagged doubts.
+Promote a low-risk task to at least medium. Read the concerns before proceeding.
+If they concern correctness or scope, address them before review. If they are
+observations (e.g., "this file is getting large"), note them and proceed to
+review.
 
 **NEEDS_CONTEXT:** The implementer needs information that wasn't provided. Provide the missing context and re-dispatch.
 
@@ -119,187 +189,194 @@ Implementer subagents report one of four statuses. Handle each appropriately:
 
 **Never** ignore an escalation or force the same model to retry without changes. If the implementer said it's stuck, something needs to change.
 
-## Prompt Templates
+If the implementer asks questions — before starting or mid-task — answer
+clearly and completely, provide additional context if needed, and don't
+rush it into implementation.
 
-- `./implementer-prompt.md` - Dispatch implementer subagent
-- `./spec-reviewer-prompt.md` - Dispatch spec compliance reviewer subagent
-- `./code-quality-reviewer-prompt.md` - Dispatch code quality reviewer subagent
+### 3. Apply the risk gate and review when required
+
+Reassess against
+[risk-classification.md](references/risk-classification.md). If every low-risk
+condition is evidenced, record
+`Task <N>: low-risk gate passed - <evidence>` and complete the task. Only the
+independent task reviewer is omitted; final whole-branch review is mandatory.
+
+For medium- and high-risk tasks, the independent review is a task-scoped gate.
+Never accept a report missing either verdict — spec compliance AND task
+quality are both required. Implementer self-review does not replace this
+review.
+
+- Hand the reviewer the uncommitted working-tree diff as a file: run
+  `scripts/review-package PLAN_FILE` and pass the printed path. The package
+  includes tracked and untracked changes without staging or committing them.
+  The reviewer scopes its judgment to the task brief and report. Never dispatch
+  a task reviewer without a diff file.
+- **Reviewer inputs:** the task reviewer gets three paths — the same brief
+  file, the report file, and the review package — plus the global
+  constraints that bind the task.
+- The global-constraints block you hand the reviewer is its attention
+  lens. Copy the binding requirements verbatim from the plan's Global
+  Constraints section or the spec: exact values, exact formats, and the
+  stated relationships between components ("same layout as X", "matches
+  Y"). The reviewer's template already carries the process rules (YAGNI,
+  test hygiene, review method) — the constraints block is for what THIS
+  project's spec demands.
+- Do not add open-ended directives like "check all uses" or "run race validates
+  if useful" without a concrete, task-specific reason
+- Do not ask a reviewer to re-run validates the implementer already ran on the
+  same code — the implementer's report carries the test evidence
+- Do not pre-judge findings for the reviewer — never instruct a reviewer to
+  ignore or not flag a specific issue. If you believe a finding would be a
+  false positive, let the reviewer raise it and adjudicate it in the review
+  loop. If the prompt you are writing contains "do not flag," "don't treat X
+  as a defect," "at most Minor," or "the plan chose" — stop: you are
+  pre-judging, usually to spare yourself a review loop.
+The task reviewer may report "⚠️ Cannot verify from diff" items — requirements
+that live in unchanged code or span tasks. These do not block the rest of the
+review, but you must resolve each one yourself before marking the task
+complete: you hold the plan and cross-task context the reviewer
+lacks. If you confirm an item is a real gap, treat it as a failed spec
+review — it enters the fix loop with the other findings.
+
+Template: [task-reviewer-prompt.md](task-reviewer-prompt.md)
+
+### 4. The fix loop
+
+The loop triggers when the review reports spec ❌, any Critical or Important
+finding, or a ⚠️ item you confirmed as a real gap.
+
+Before the loop starts, two routes leave it immediately:
+
+- Record Minor findings in the progress ledger as you go
+  (`Task <N>: minor (deferred): <one-liner>`), and point the final
+  whole-branch review at that list so it can triage which must be fixed
+  before merge. A roll-up nobody reads is a silent discard. Minor findings
+  never enter the loop.
+- A finding labeled plan-mandated — or any finding that conflicts with
+  what the plan's text requires — is the human's decision, like any plan
+  contradiction: present the finding and the plan text, ask which governs.
+  Do not dismiss the finding because the plan mandates it, and do not
+  dispatch a fix that contradicts the plan without asking.
+Everything else enters the loop. A fix round is one fix dispatch plus one
+scoped re-review. Five rounds maximum per task:
+
+**Rounds 1-3 — resume the original implementer.** Send it the open findings
+verbatim. Its context is intact: it knows the task, the code, and its own
+choices. If your harness cannot send another message to a live subagent,
+dispatch a fresh implementer carrying the brief path, the report-file path,
+and the findings — the report file is the persistent memory either way.
+
+**Rounds 4-5 — dispatch a fresh implementer on a more capable model** (per
+Model Selection), with the brief path, the report-file path, the open
+findings, and this framing: "A prior implementer attempted this task
+[N] times; you own it now. Read the report file for what was tried." A loop
+that survives three resumes usually means the implementer cannot see its
+own problem — fresh eyes and a capability bump in one move.
+
+**Every round, either way:** the implementer fixes, re-runs the validates
+covering the amended code, appends its fix report to the same report file,
+and returns the short contract. Before re-dispatching the reviewer, confirm
+the fix report contains the covering validates, the command run, and the
+output; dispatch the re-review once all three are present. Name the
+covering test files in the fix message — a one-line fix does not need the
+whole suite.
+
+**The re-review is scoped.** Run `scripts/review-package PLAN_FILE` again and
+dispatch
+[re-review-prompt.md](re-review-prompt.md) with the findings list, the
+brief, report file, and fresh diff path. The re-reviewer verdicts
+each finding ADDRESSED or NOT ADDRESSED and flags new breakage in the fix
+area only. New Critical/Important breakage caused by the fix joins the open
+findings list. Out-of-scope observations go to the ledger as deferred minors.
+
+**After each round,** append to the ledger:
+`Task <N>: fix round <R>/5 (<X> addressed, <Y> open — <finding one-liners>)`
+
+Never fix findings yourself in the controller session — your context stays
+clean for coordination, and controller fixes skip review.
+
+**The breaker.** When round 5's re-review still leaves findings open, stop
+dispatching. Adjudicate each open finding yourself — you hold the plan and
+the cross-task context the reviewer lacks:
+
+- **The reviewer is wrong, or the point is contestable:** park it —
+  `Task <N>: parked — <finding> — ruling: <why the code stands>`. The final
+  review sees both sides.
+- **Real, but nothing downstream builds on it:** park it the same way, with
+  a ruling that says it's real and deferred.
+- **Real and load-bearing** — a later task builds on it, or it reveals a
+  plan defect: STOP. Append `Task <N>: BLOCKED — <reason>` and report to
+  your human partner with the finding, the plan text it collides with, and
+  the fix history. Parking a structural failure lets every dependent task
+  build on it and hands the final review a problem it cannot fix either.
+
+Adjudicate only at the cap. Adjudicating earlier to end a loop is
+pre-judging with a different name. Every adjudication is a ledger entry —
+a silent discard is forbidden.
+
+### 5. Complete the task
+
+After a passed low-risk gate, clean review, or capped findings with rulings,
+append the matching completion line:
+
+- `Task <N>: complete (low-risk self-review + validation; final review pending)`
+- `Task <N>: complete (review clean)`
+- `Task <N>: complete (<K> parked)` after a
+  tripped breaker
+
+Then mark the todo complete and move on. Never move to the next task while a
+required review has open Critical/Important issues that are neither fixed nor
+parked-with-ruling at the cap.
+
+## Final Review
+
+The final whole-branch review gets a package too: run
+`scripts/review-package PLAN_FILE` and include the printed path in the final
+review dispatch, so the reviewer reads the complete uncommitted working tree
+without re-deriving it. Dispatch
+on the most capable available model (see Model Selection), using
+superpowers:requesting-code-review's
+[code-reviewer.md](../requesting-code-review/code-reviewer.md). Point it at
+the ledger's low-risk completions, deferred-minor, and parked lines so it
+explicitly scrutinizes work that did not receive an independent task review
+and triages what must be fixed before merge.
+
+If the final whole-branch review returns findings, dispatch ONE fix subagent
+with the complete findings list — not one fixer per finding.
+Per-finding fixers each rebuild context and re-run suites; a real
+session's final-review fix wave cost more than all its tasks combined.
+Then generate a fresh working-tree package and run exactly one scoped
+re-review of the fix wave with [re-review-prompt.md](re-review-prompt.md).
+Adjudicate any residual findings as in the task loop's breaker: park with
+rulings, or stop on load-bearing ones. There is no second fix wave —
+residual load-bearing findings surface to your human partner when
+finishing-a-development-branch presents the options.
+
+## Finish
+
+When the final whole-branch review is clean and its fixes are applied,
+delete this plan's workspace (`rm -rf <workspace>`) — the git history is
+the record now. Sibling directories belong to other plans; leave them
+alone.
+
+Use superpowers:finishing-a-development-branch.
+
+## Common Rationalizations
+
+| Excuse | Reality |
+|--------|---------|
+| "Close enough on spec compliance" | Reviewer found spec gaps = not done. Fix or hit the cap and adjudicate — those are the only exits. |
+| "I'll fix it myself, dispatching is overhead" | Controller fixes pollute your context and skip review. Resume the implementer. |
+| "One more round will converge" | Past the cap, rounds don't converge — the failure is structural. Adjudicate and route. |
+| "The reviewer will just find something new anyway" | Scoped re-reviews verify fixes; they cannot wander. New findings on untouched code go to the ledger, not the loop. |
+| "This finding is obviously wrong, I'll drop it" | You adjudicate only at the cap, and every ruling is a ledger entry. Silent discards are forbidden. |
+| "The fix was small, skip the re-review" | Unreviewed fixes are how regressions land. Every round ends with a scoped re-review. |
+| "This looks low risk" | Every condition needs evidence; uncertainty defaults to medium. |
+| "Low risk means no review" | Only the task reviewer is omitted; final review remains mandatory. |
+| "The scope changed, but it is still low risk" | Scope expansion, missing validation, or concerns promote it. |
+| "Ledger bookkeeping is overhead" | The ledger is what survives compaction. Controllers without one have re-dispatched entire completed task sequences. |
 
 ## Example Workflow
 
-```
-You: I'm using Subagent-Driven Development to execute this plan.
-
-[Read plan file once: docs/superpowers/plans/feature-plan.md]
-[Extract all 5 tasks with full text and context]
-[Create TodoWrite with all tasks]
-
-Task 1: Hook installation script
-
-[Get Task 1 text and context (already extracted)]
-[Dispatch implementation subagent with full task text + context]
-
-Implementer: "Before I begin - should the hook be installed at user or system level?"
-
-You: "User level (~/.config/superpowers/hooks/)"
-
-Implementer: "Got it. Implementing now..."
-[Later] Implementer:
-  - Implemented install-hook command
-  - Validated with lightweight checks
-  - Self-review: Found I missed --force flag, added it
-  - Reported changed files
-
-[Dispatch spec compliance reviewer]
-Spec reviewer: ✅ Spec compliant - all requirements met, nothing extra
-
-[Capture diff, dispatch code quality reviewer]
-Code reviewer: Strengths: Clean implementation and solid quality. Issues: None. Approved.
-
-[Mark Task 1 complete]
-
-Task 2: Recovery modes
-
-[Get Task 2 text and context (already extracted)]
-[Dispatch implementation subagent with full task text + context]
-
-Implementer: [No questions, proceeds]
-Implementer:
-  - Added verify/repair modes
-  - Validated with lightweight checks
-  - Self-review: All good
-  - Reported changed files
-
-[Dispatch spec compliance reviewer]
-Spec reviewer: ❌ Issues:
-  - Missing: Progress reporting (spec says "report every 100 items")
-  - Extra: Added --json flag (not requested)
-
-[Implementer fixes issues]
-Implementer: Removed --json flag, added progress reporting
-
-[Spec reviewer reviews again]
-Spec reviewer: ✅ Spec compliant now
-
-[Dispatch code quality reviewer]
-Code reviewer: Strengths: Solid. Issues (Important): Magic number (100)
-
-[Implementer fixes]
-Implementer: Extracted PROGRESS_INTERVAL constant
-
-[Code reviewer reviews again]
-Code reviewer: ✅ Approved
-
-[Mark Task 2 complete]
-
-...
-
-[After all tasks]
-[Dispatch final code-reviewer]
-Final reviewer: All requirements met, ready to merge
-
-Done!
-```
-
-## Advantages
-
-**vs. Manual execution:**
-- Subagents follow the requested validation naturally
-- Fresh context per task (no confusion)
-- Parallel-safe (subagents don't interfere)
-- Subagent can ask questions (before AND during work)
-
-**vs. Executing Plans:**
-- Same session (no handoff)
-- Continuous progress (no waiting)
-- Review checkpoints automatic
-
-**Efficiency gains:**
-- No file reading overhead (controller provides full text)
-- Controller curates exactly what context is needed
-- Subagent gets complete information upfront
-- Questions surfaced before work begins (not after)
-
-**Quality gates:**
-- Self-review catches issues before handoff
-- Two-stage review: spec compliance, then code quality
-- Review loops ensure fixes actually work
-- Spec compliance prevents over/under-building
-- Code quality ensures implementation is well-built
-
-**Cost:**
-- More subagent invocations (implementer + 2 reviewers per task)
-- Controller does more prep work (extracting all tasks upfront)
-- Review loops add iterations
-- But catches issues early (cheaper than debugging later)
-
-## Asking Questions in VS Code
-
-**In VS Code — MANDATORY:** Quando precisar fazer perguntas ao usuário (por exemplo, para esclarecer contexto antes de despachar um subagente, ou para responder a um `NEEDS_CONTEXT` do implementador), use `vscode_askQuestions` — NUNCA escreva perguntas inline no chat. Isso inclui perguntas de acompanhamento baseadas em respostas anteriores. Após receber uma resposta, chame `vscode_askQuestions` novamente para a próxima pergunta. O único momento em que você escreve texto no chat é para apresentar descobertas, status de tarefas, ou resultados — nunca para fazer perguntas.
-
-## Continuous Execution — No Stops Between Tasks
-
-**MANDATORY:** Após concluir uma task (ambas as revisões aprovadas), **continue imediatamente para a próxima task na mesma iteração**. Nunca pare entre tasks com mensagens como:
-- "Se você quiser, continuo com a Task N..."
-- "Posso prosseguir para a Task N?"
-- "A Task N está pronta. Deseja que eu continue?"
-
-A única exceção é `BLOCKED` com escalação ao humano — nesse caso use `vscode_askQuestions` para coletar o input necessário antes de prosseguir. Em todos os outros casos, a execução é contínua até que todas as tasks estejam completas ou um bloqueio real exija input.
-
-### Read-Only Git Mode
-
-In read-only mode, implementers do NOT commit. After each task:
-
-1. Controller captures `git diff --no-color`
-2. Controller dispatches spec reviewer with the diff
-3. Reviewers assess the diff directly
-4. If issues found, implementer fixes; diff recaptured; review repeats
-5. Once task approved, move to next task
-
-All changes remain uncommitted; user handles git operations after completion.
-
-## Red Flags
-
-**Never:**
-- Start implementation on main/master branch without explicit user consent
-- Instruct implementer to commit in read-only mode
-- Stop between tasks to ask permission to continue (use `vscode_askQuestions` only when genuinely blocked)
-- Skip reviews (spec compliance OR code quality)
-- Proceed with unfixed issues
-- Dispatch multiple implementation subagents in parallel (conflicts)
-- Make subagent read plan file (provide full text instead)
-- Skip scene-setting context (subagent needs to understand where task fits)
-- Ignore subagent questions (answer before letting them proceed)
-- Accept "close enough" on spec compliance (spec reviewer found issues = not done)
-- Skip review loops (reviewer found issues = implementer fixes = review again)
-- Let implementer self-review replace actual review (both are needed)
-- **Start code quality review before spec compliance is ✅** (wrong order)
-- Move to next task while either review has open issues
-
-**If subagent asks questions:**
-- Answer clearly and completely
-- Provide additional context if needed
-- Don't rush them into implementation
-
-**If reviewer finds issues:**
-- Implementer (same subagent) fixes them
-- Reviewer reviews again
-- Repeat until approved
-- Don't skip the re-review
-
-**If subagent fails task:**
-- Dispatch fix subagent with specific instructions
-- Don't try to fix manually (context pollution)
-
-## Integration
-
-**Required workflow skills:**
-- **superpowers:writing-plans** - Creates the plan this skill executes
-- **superpowers:requesting-code-review** - Code review template for reviewer subagents
-- **superpowers:finishing-a-development-branch** - Complete development after all tasks
-
-**Subagents should use:**
-- **lightweight validation and spec-driven checks** - Subagents validate implementation against the plan and quality expectations
-
-**Alternative workflow:**
-- **superpowers:executing-plans** - Use for parallel session instead of same-session execution
+Read [references/example-workflow.md](references/example-workflow.md) only
+when a concrete walkthrough is needed.

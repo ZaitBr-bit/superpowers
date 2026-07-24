@@ -7,12 +7,13 @@ Use this template when dispatching a spec document reviewer subagent.
 **Dispatch after:** Spec document is written to docs/superpowers/specs/
 
 ```
-Task tool (general-purpose):
+Subagent (general-purpose):
   description: "Review spec document"
+  model: [MODEL — REQUIRED: choose per ../using-superpowers/references/subagent-models.md]
+  [EFFORT_FIELD]: medium [REQUIRED: Claude uses effort; Codex uses reasoning_effort]
+  [MAX_TURNS_FIELD]: 4 [Claude only: use maxTurns; omit in Codex]
   prompt: |
     You are a spec document reviewer. Verify this spec is complete and ready for planning.
-
-    **Spec to review:** [SPEC_FILE_PATH]
 
     ## What to Check
 
@@ -35,15 +36,16 @@ Task tool (general-purpose):
 
     ## Output Format
 
-    ## Spec Review
+    If approved with no blocking issue, return exactly:
+    `PASS`
 
-    **Status:** Approved | Issues Found
+    Otherwise return only:
+    `FAIL`
+    - [Section X]: [specific issue] — [why it blocks planning]
 
-    **Issues (if any):**
-    - [Section X]: [specific issue] - [why it matters for planning]
+    ## Inputs
 
-    **Recommendations (advisory, do not block approval):**
-    - [suggestions for improvement]
+    **Spec to review:** [SPEC_FILE_PATH]
 ```
 
-**Reviewer returns:** Status, Issues (if any), Recommendations
+**Reviewer returns:** `PASS`, or `FAIL` plus blocking issues only
