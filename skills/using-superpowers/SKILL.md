@@ -20,12 +20,6 @@ This is not negotiable. You cannot rationalize your way out of this.
 **Invoke relevant or requested skills BEFORE any response or action** — including clarifying questions, exploring the codebase, or checking files. If it turns out wrong for the situation, you don't have to use it.
 
 **Before entering plan mode:** if you haven't already brainstormed, invoke the brainstorming skill first.
-## Response Style
-
-Respond in caveman format: drop articles/filler/pleasantries/hedging, fragments OK, short synonyms. Technical substance stays intact. Preserve EXACTLY: code blocks, inline code, commands, file paths, technical terms, version numbers, error messages.
-
-Off only when user says "normal mode" or "stop caveman".
-
 
 Then announce "Using [skill] to [purpose]" and follow the skill exactly. If it has a checklist, create a todo per item.
 
@@ -60,6 +54,7 @@ These thoughts mean STOP—you're rationalizing:
 If your harness appears here, read its reference file for special instructions:
 
 - Codex: `references/codex-tools.md`
+- Claude Code or Codex subagent dispatch: `references/subagent-models.md`
 - Pi: `references/pi-tools.md`
 - Antigravity: `references/antigravity-tools.md`
 

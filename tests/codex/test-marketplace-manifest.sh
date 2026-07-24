@@ -5,7 +5,16 @@ SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 REPO_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 MARKETPLACE="$REPO_ROOT/.agents/plugins/marketplace.json"
 
-python3 - "$MARKETPLACE" "$REPO_ROOT" <<'PY'
+if command -v python3 >/dev/null 2>&1; then
+    PYTHON=python3
+elif command -v python >/dev/null 2>&1; then
+    PYTHON=python
+else
+    echo "python3 or python is required" >&2
+    exit 1
+fi
+
+"$PYTHON" - "$MARKETPLACE" "$REPO_ROOT" <<'PY'
 import json
 import sys
 from pathlib import Path

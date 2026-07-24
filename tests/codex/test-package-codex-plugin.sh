@@ -5,6 +5,15 @@ SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 REPO_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 SCRIPT_UNDER_TEST="$REPO_ROOT/scripts/package-codex-plugin.sh"
 
+if command -v python3 >/dev/null 2>&1; then
+  PYTHON=python3
+elif command -v python >/dev/null 2>&1; then
+  PYTHON=python
+else
+  echo "python3 or python is required" >&2
+  exit 1
+fi
+
 FAILURES=0
 TEST_ROOT="$(mktemp -d)"
 
@@ -140,7 +149,7 @@ extracted="$TEST_ROOT/extracted"
 tar_extracted="$TEST_ROOT/tar-extracted"
 write_metadata_fixture "$metadata_source"
 
-source_hooks="$(python3 -c 'import json; print(json.load(open("'"$REPO_ROOT"'/.codex-plugin/plugin.json")).get("hooks"))')"
+source_hooks="$("$PYTHON" -c 'import json,sys; print(json.load(open(sys.argv[1])).get("hooks"))' "$REPO_ROOT/.codex-plugin/plugin.json")"
 assert_equals "$source_hooks" "{}" "source Codex manifest suppresses local hook auto-discovery"
 
 if output="$("$SCRIPT_UNDER_TEST" --allow-dirty --metadata-source "$metadata_source" --output "$archive" 2>&1)"; then
@@ -171,8 +180,8 @@ assert_contains "$archive_paths" "skills/brainstorming/agents/openai.yaml" "arch
 assert_contains "$archive_paths" "assets/app-icon.png" "archive includes app icon"
 assert_contains "$archive_paths" "assets/superpowers-small.svg" "archive includes composer icon"
 
-manifest_summary="$(read_archive_file "$archive" .codex-plugin/plugin.json | python3 -c 'import json,sys; data=json.load(sys.stdin); print("\t".join([data["name"], data["version"], data["skills"], str(data.get("hooks"))]))')"
-expected_version="$(python3 -c 'import json; print(json.load(open("'"$REPO_ROOT"'/.codex-plugin/plugin.json"))["version"])')"
+manifest_summary="$(read_archive_file "$archive" .codex-plugin/plugin.json | "$PYTHON" -c 'import json,sys; data=json.load(sys.stdin); print("\t".join([data["name"], data["version"], data["skills"], str(data.get("hooks"))]))')"
+expected_version="$("$PYTHON" -c 'import json,sys; print(json.load(open(sys.argv[1]))["version"])' "$REPO_ROOT/.codex-plugin/plugin.json")"
 assert_equals "$manifest_summary" "superpowers	$expected_version	./skills/	$source_hooks" "archive manifest preserves source hooks"
 
 skill_count="$(find "$extracted/skills" -mindepth 1 -maxdepth 1 -type d | wc -l | tr -d ' ')"
@@ -185,7 +194,7 @@ else
   fail "archive preserves executable script mode"
 fi
 
-zip_times="$(python3 - "$archive" <<'PY'
+zip_times="$("$PYTHON" - "$archive" <<'PY'
 import sys
 import zipfile
 
@@ -210,7 +219,7 @@ assert_equals "$tar_archive_paths" "$archive_paths" "zip and tar.gz archives con
 tar_task_brief_mode="$(tar -tzvf "$tar_archive" skills/subagent-driven-development/scripts/task-brief | awk '{print $1}')"
 assert_equals "$tar_task_brief_mode" "-rwxr-xr-x" "tar.gz archive preserves executable script mode"
 
-tar_metadata_times="$(python3 - "$tar_archive" <<'PY'
+tar_metadata_times="$("$PYTHON" - "$tar_archive" <<'PY'
 import sys, tarfile
 with tarfile.open(sys.argv[1]) as archive:
     print(sorted({member.mtime for member in archive.getmembers()}))

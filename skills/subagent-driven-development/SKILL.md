@@ -157,6 +157,9 @@ conflicts that only emerge from implementation.
 ## Model Selection
 
 Use the least powerful model that can handle each role to conserve cost and increase speed.
+Apply the Claude Code or Codex names and required medium effort from
+[subagent-models.md](../using-superpowers/references/subagent-models.md) to
+every dispatch.
 
 **Mechanical implementation tasks** (isolated functions, clear specs, 1-2 files): use a fast, cheap model. Most implementation tasks are mechanical when the plan is well-specified.
 
@@ -177,6 +180,10 @@ the implementer that got stuck.
 **Always specify the model explicitly when dispatching a subagent.** An
 omitted model inherits your session's model — often the most capable and
 most expensive — which silently defeats this section.
+
+**Always specify medium effort explicitly.** On Claude Code use
+`effort: medium`; on Codex use `reasoning_effort: medium`. Do not inherit the
+parent session's effort.
 
 **Turn count beats token price.** Wall-clock and context cost scale with how
 many turns a subagent takes, and the cheapest models routinely take 2-3× the

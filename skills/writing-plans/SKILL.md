@@ -9,8 +9,6 @@ description: Use when you have a spec or requirements for a multi-step task, bef
 
 Write comprehensive implementation plans assuming the engineer has zero context for our codebase and questionable taste. Document everything they need to know: which files to touch for each task, code, validation, docs they might need to check, how to validate it. Give them the whole plan as bite-sized tasks. DRY. YAGNI.
 
-**Document style:** Write plan prose in caveman format — drop articles/filler/hedging, fragments OK, short synonyms. Preserve EXACTLY: code blocks, inline code, commands, file paths, technical terms, version numbers.
-
 Assume they are a skilled developer, but know almost nothing about our toolset or problem domain. Assume they don't know good validation design very well.
 
 **Announce at start:** "I'm using the writing-plans skill to create the implementation plan."

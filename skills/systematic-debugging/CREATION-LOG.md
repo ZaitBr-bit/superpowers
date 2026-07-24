@@ -54,21 +54,22 @@ Framework designed to resist rationalization under pressure:
 
 ## Testing Approach
 
-Created 4 validation tests following skills/meta/testing-skills-with-subagents:
+Created 4 validation tests following
+[testing-skills-with-subagents.md](../writing-skills/testing-skills-with-subagents.md):
 
-### Test 1: Academic Context (No Pressure)
+### [Test 1: Academic Context (No Pressure)](test-academic.md)
 - Simple bug, no time pressure
 - **Result:** Perfect compliance, complete investigation
 
-### Test 2: Time Pressure + Obvious Quick Fix
+### [Test 2: Time Pressure + Obvious Quick Fix](test-pressure-1.md)
 - User "in a hurry", symptom fix looks easy
 - **Result:** Resisted shortcut, followed full process, found real root cause
 
-### Test 3: Complex System + Uncertainty
+### [Test 3: Complex System + Uncertainty](test-pressure-2.md)
 - Multi-layer failure, unclear if can find root cause
 - **Result:** Systematic investigation, traced through all layers, found source
 
-### Test 4: Failed First Fix
+### [Test 4: Failed First Fix](test-pressure-3.md)
 - Hypothesis doesn't work, temptation to add more fixes
 - **Result:** Stopped, re-analyzed, formed new hypothesis (no shotgun)
 
@@ -82,7 +83,7 @@ Created 4 validation tests following skills/meta/testing-skills-with-subagents:
 - Flowchart for "fix failed" decision
 
 ### Enhancement 1: TDD Reference
-- Added link to skills/testing/test-driven-development
+- Added link to [test-driven-development](../test-driven-development/SKILL.md)
 - Note explaining TDD's "simplest code" ≠ debugging's "root cause"
 - Prevents confusion between methodologies
 

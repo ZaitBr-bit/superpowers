@@ -9,6 +9,8 @@ Use this template when dispatching a plan document reviewer subagent.
 ```
 Subagent (general-purpose):
   description: "Review plan document"
+  model: [MODEL — REQUIRED: choose per ../using-superpowers/references/subagent-models.md]
+  [EFFORT_FIELD]: medium [REQUIRED: Claude uses effort; Codex uses reasoning_effort]
   prompt: |
     You are a plan document reviewer. Verify this plan is complete and ready for implementation.
 
