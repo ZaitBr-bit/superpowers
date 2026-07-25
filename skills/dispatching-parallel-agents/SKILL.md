@@ -70,7 +70,8 @@ Issue all three subagent dispatches in the same response — they run in paralle
 Before dispatching, select each worker's model from
 [subagent-models.md](../using-superpowers/references/subagent-models.md).
 Specify the model and medium effort explicitly; independent lightweight
-investigations normally use Haiku on Claude Code or Terra on Codex.
+investigations normally use Haiku on Claude Code or Luna on Codex when the
+runtime exposes it (otherwise Terra).
 
 ```text
 Subagent (general-purpose): "Fix agent-tool-abort.test.ts failures"

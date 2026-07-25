@@ -6,7 +6,7 @@ the model merely to inherit the parent session's model.
 Always use medium reasoning effort:
 
 - Claude Code dispatch: `model: haiku|sonnet|opus` and `effort: medium`
-- Codex dispatch: `model: gpt-5.6-terra|gpt-5.6-sol` and
+- Codex dispatch: `model: gpt-5.6-luna|gpt-5.6-terra|gpt-5.6-sol` and
   `reasoning_effort: medium`
 
 For Claude Code, also cap agent turns:
