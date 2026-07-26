@@ -50,6 +50,15 @@ Low risk requires every listed condition; medium is the default when
 uncertain. The execution controller reassesses risk from the actual diff and
 may promote it before completion.
 
+## Browser/UI Validation Tasks
+
+When a task's Validate step exercises browser/UI behavior, plan the concrete
+Playwright scenario now — the full spec code, or the full ordered list of
+steps and assertions — instead of leaving discovery for execution time.
+**REQUIRED SUB-SKILL:** Use superpowers:testing-with-playwright to pick the
+execution path (CLI vs. batched MCP subagent) and write the scenario without
+placeholders, per the "No Placeholders" rule below.
+
 ## Bite-Sized Task Granularity
 
 **Each step is one action (2-5 minutes):**

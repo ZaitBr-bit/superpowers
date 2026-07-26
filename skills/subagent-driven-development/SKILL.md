@@ -162,6 +162,11 @@ stage or commit task changes.
 - Record the implementer's agent identity from the dispatch result —
   fix-loop rounds 1-3 resume this agent.
 - Never dispatch multiple implementation subagents in parallel (conflicts).
+- If the task brief includes a browser/UI Playwright scenario, forward it
+  verbatim and add **REQUIRED SUB-SKILL:** Use superpowers:testing-with-playwright
+  to the dispatch — the implementer runs the scenario as one batched unit
+  (CLI when available, otherwise one internal MCP sequence); the controller
+  never calls MCP browser tools directly.
 
 Template: [implementer-prompt.md](implementer-prompt.md)
 

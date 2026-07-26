@@ -223,6 +223,7 @@ The Pi package loads the Superpowers skills and a small extension that injects t
 
 **Testing**
 - **test-driven-development** - RED-GREEN-REFACTOR cycle (includes testing anti-patterns reference)
+- **testing-with-playwright** - Plans browser/UI test scenarios up front and batches Playwright execution (CLI test runner, or one MCP subagent) instead of many separate tool calls
 
 **Debugging**
 - **systematic-debugging** - 4-phase root cause process (includes root-cause-tracing, defense-in-depth, condition-based-waiting techniques)

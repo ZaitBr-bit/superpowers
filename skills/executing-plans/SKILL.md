@@ -31,6 +31,10 @@ For each task:
 3. Run validation as specified
 4. Mark as completed
 
+If a task's validation is a browser/UI scenario, run it as one batched unit
+instead of separate MCP calls. **REQUIRED SUB-SKILL:** Use
+superpowers:testing-with-playwright.
+
 ### Step 3: Complete Development
 
 After all tasks complete and validation passes:

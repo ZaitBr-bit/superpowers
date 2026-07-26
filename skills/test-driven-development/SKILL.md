@@ -46,6 +46,10 @@ When writing or changing any test, read [writing-good-tests.md](writing-good-tes
 4. Refactor for clarity if the change can be made simpler.
 5. Stop once the behavior is understandable and the code is easy to review.
 
+For browser/UI behavior, the lightest available validation is a batched
+Playwright run, not step-by-step manual clicking through MCP tools.
+**REQUIRED SUB-SKILL:** Use superpowers:testing-with-playwright.
+
 ## Common Rationalizations
 
 | Excuse | Reality |
