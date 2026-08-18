@@ -47,8 +47,12 @@ JIRA_FILE=$(node "$SKILL/scripts/jira-context.mjs" CISS-180745)
 DIFF_FILE=$(bash "$SKILL/scripts/resolve-diff.sh" CISS-180745)
 ```
 
-`resolve-diff.sh` accepts two optional flags:
+`resolve-diff.sh` accepts three optional flags, mutually exclusive:
 - `--branch <ref>` — search the issue's commits on that ref instead of `HEAD`
+- `--commit <sha>` — review exactly that commit. For a merge commit it takes the
+  diff against the first parent, because `git show` on a merge yields the
+  combined diff, which is usually near-empty and would silently produce an empty
+  review
 - `--diff-file <path>` — use a physical diff file as-is, for pre-merge review
 
 `jira-context.mjs` reads its credentials from `.env` in this skill's directory
