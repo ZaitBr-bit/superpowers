@@ -36,14 +36,46 @@ git diff --no-color > "$DIFF_FILE"
 
 Pass the path, not the diff text. The diff stays out of the controller context.
 
+**1b. When a Jira issue key is supplied — gather demand context and scope the diff:**
+
+Both scripts live in this skill's `scripts/` directory and print a single path to stdout.
+Pass those paths onward, never their contents.
+
+```bash
+SKILL=<this skill's base directory>
+JIRA_FILE=$(node "$SKILL/scripts/jira-context.mjs" CISS-180745)
+DIFF_FILE=$(bash "$SKILL/scripts/resolve-diff.sh" CISS-180745)
+```
+
+`resolve-diff.sh` accepts two optional flags:
+- `--branch <ref>` — search the issue's commits on that ref instead of `HEAD`
+- `--diff-file <path>` — use a physical diff file as-is, for pre-merge review
+
+`jira-context.mjs` reads its credentials from `.env` in this skill's directory
+(see `.env.example`). Never pass the token through the conversation.
+
+Derive the changed-file list for the reviewer prompt from the diff itself — the
+result fills `{FILES_CHANGED}`:
+
+```bash
+grep '^diff --git' "$DIFF_FILE" | awk '{print $3}' | sed 's|^a/||' | sort -u
+```
+
+Then dispatch as in step 2, setting `{PLAN_OR_REQUIREMENTS}` to `$JIRA_FILE` —
+a path, exactly as the template's "plan file path" usage intends.
+
+Either script exiting non-zero aborts the review. Do not dispatch a reviewer
+with an empty diff, or without the demand context that was requested.
+
 **2. Dispatch code reviewer subagent:**
 
 Dispatch a `general-purpose` subagent, filling the template at [code-reviewer.md](code-reviewer.md)
 
 **Placeholders:**
 - `{DESCRIPTION}` - Brief summary of what you built
-- `{PLAN_OR_REQUIREMENTS}` - What it should do
+- `{PLAN_OR_REQUIREMENTS}` - What it should do (a plan file path, or the Jira context file from step 1b)
 - `{DIFF_FILE}` - Path to the git diff artifact
+- `{FILES_CHANGED}` - Comma-separated list of changed files
 
 **3. Act on feedback:**
 - Fix Critical issues immediately
