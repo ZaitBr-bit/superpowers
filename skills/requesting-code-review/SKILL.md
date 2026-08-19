@@ -9,6 +9,10 @@ Dispatch a code reviewer subagent to catch issues before they cascade. The revie
 
 **Core principle:** Review early, review often.
 
+**The deliverable is a file.** Every review produces a markdown report in the
+current workspace under `docs/superpowers/reviews/`. The chat gets the verdict
+and the path; the findings live in the report.
+
 ## When to Request Review
 
 **Mandatory:**
@@ -71,6 +75,28 @@ a path, exactly as the template's "plan file path" usage intends.
 Either script exiting non-zero aborts the review. Do not dispatch a reviewer
 with an empty diff, or without the demand context that was requested.
 
+**1c. Decide the report path — the review report is a file, not a chat message:**
+
+Every review writes its findings to a markdown report **in the current
+workspace**, never in the skill directory and never only in the conversation:
+
+```bash
+mkdir -p docs/superpowers/reviews
+REVIEW_REPORT_FILE="docs/superpowers/reviews/<YYYY-MM-DD>-<slug>.md"
+```
+
+- `<YYYY-MM-DD>` — today's date.
+- `<slug>` — the Jira key plus a short kebab-case topic (`CISS-180745-validacao-titulo`),
+  or the feature/branch name when there is no Jira key.
+- **One report per demand.** When a single diff covers several Jira issues,
+  dispatch one reviewer per issue with its own `{REVIEW_REPORT_FILE}`, so each report
+  is judged against its own requirements.
+- Write the report in the language of the repository's requirements and code
+  comments — for a Brazilian Portuguese codebase, the report is in PT-BR.
+
+The report is left uncommitted in the working tree. Do not commit it unless the
+user explicitly asks.
+
 **2. Dispatch code reviewer subagent:**
 
 Dispatch a `general-purpose` subagent, filling the template at [code-reviewer.md](code-reviewer.md)
@@ -80,8 +106,29 @@ Dispatch a `general-purpose` subagent, filling the template at [code-reviewer.md
 - `{PLAN_OR_REQUIREMENTS}` - What it should do (a plan file path, or the Jira context file from step 1b)
 - `{DIFF_FILE}` - Path to the git diff artifact
 - `{FILES_CHANGED}` - Comma-separated list of changed files
+- `{REVIEW_REPORT_FILE}` - Path from step 1c where the reviewer writes its findings
+- `{REVIEW_REPORT_LANGUAGE}` - Language the report must be written in
 
-**3. Act on feedback:**
+**3. Report the path, not the findings:**
+
+The reviewer writes the full report and returns a verdict line, the report
+path, and a title-only index of the Critical/Important findings. Your chat
+reply is a pointer, not a transcript:
+
+- Give the verdict, the counts by severity, and the clickable report path.
+- Blocking findings may get one title line each — the reviewer's index line,
+  not its body.
+- Never paste the defect bodies, impact text, fixes, or the report contents
+  into the chat — that is what the `.md` is for.
+- When several reviewers ran, list one line per report.
+
+The index exists so a dispatcher can route fixes and write a ledger without
+opening the report. Downstream steps that need the full findings — a fix
+subagent, a scoped re-review — get the **report path**, and read it
+themselves. Never read the report into your own session to re-type it.
+
+**4. Act on feedback:**
+- Read the report file when you are about to fix
 - Fix Critical issues immediately
 - Fix Important issues before proceeding
 - Note Minor issues for later
@@ -94,19 +141,22 @@ Dispatch a `general-purpose` subagent, filling the template at [code-reviewer.md
 
 You: Let me request code review before proceeding.
 
-[Write git diff to DIFF_FILE]
+[Write git diff to DIFF_FILE, decide REVIEW_REPORT_FILE]
 
 [Dispatch code reviewer subagent]
   DESCRIPTION: Added verifyIndex() and repairIndex() with 4 issue types
   PLAN_OR_REQUIREMENTS: Task 2 from docs/superpowers/plans/deployment-plan.md
   DIFF_FILE: [.superpowers/reviews/review-<sha>.diff]
+  REVIEW_REPORT_FILE: docs/superpowers/reviews/2026-08-19-verify-index.md
 
-[Subagent returns]:
-  VERDICT: WITH FIXES
-  Important, src/index.ts:41, missing progress indicators
-  Minor, src/index.ts:19, reporting interval is a magic number
+[Subagent writes the report and returns]:
+  VERDICT: WITH FIXES — 0 Critical, 1 Important, 1 Minor
+  Report: docs/superpowers/reviews/2026-08-19-verify-index.md
 
-You: [Fix progress indicators]
+You: VERDICT WITH FIXES — nothing blocking. 1 Important, 1 Minor.
+     Report: docs/superpowers/reviews/2026-08-19-verify-index.md
+
+[Fix progress indicators]
 [Continue to Task 3]
 ```
 
@@ -114,13 +164,18 @@ You: [Fix progress indicators]
 
 | Excuse | Reality |
 |--------|---------|
-| "I'll just review the diff myself instead of dispatching a reviewer" | You're the coordinator — reviewing the diff inline burns the context window you need to keep driving the work. Dispatch a reviewer subagent: the diff and the evaluation live in its context, and only the findings come back to you. |
+| "I'll just review the diff myself instead of dispatching a reviewer" | You're the coordinator — reviewing the diff inline burns the context window you need to keep driving the work. Dispatch a reviewer subagent: the diff and the evaluation live in its context, the findings land in the report file, and only the verdict and the path come back to you. |
 | "The reviewer needs my whole session history to understand the change" | Hand it precisely crafted context, never your session's history. That keeps the reviewer on the work product, not your thought process. |
+| "There are only two findings — I'll just write them in the chat" | The report is always a file. Chat scrolls away and the next session cannot read it; the `.md` in the workspace survives, diffs, and can be handed to whoever fixes the code. Two findings is still a report. |
+| "I'll write the report later, after the fixes" | Write it when the reviewer returns. A report written after the fixes records what you remember, not what was found. |
+| "The user asked for the findings, so they want them in the chat" | They want the findings — the file is where findings live. Reply with the verdict, the counts, and the path. |
 
 ## Red Flags
 
 **Never:**
 - Skip a required review because "it's simple"
+- Write findings only in the chat instead of the workspace `.md`
+- Put the report anywhere but the current workspace
 - Ignore Critical issues
 - Proceed with unfixed Important issues
 - Argue with valid technical feedback
