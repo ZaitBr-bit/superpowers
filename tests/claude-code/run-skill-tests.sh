@@ -6,6 +6,10 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 cd "$SCRIPT_DIR"
 
+# Resolvedor portavel de timeout: no macOS o binario e gtimeout, nao timeout.
+# shellcheck source=../lib/timeout.sh
+source "$SCRIPT_DIR/../lib/timeout.sh"
+
 echo "========================================"
 echo " Claude Code Skills Test Suite"
 echo "========================================"
@@ -21,6 +25,10 @@ if ! command -v claude &> /dev/null; then
     echo "Install Claude Code first: https://code.claude.com"
     exit 1
 fi
+
+# Sem binario de timeout os testes rodam, mas sem limite de tempo — e o exit 124
+# nunca acontece, entao um resultado verde nao prova que o limite foi respeitado.
+warn_missing_timeout
 
 # Parse command line arguments
 VERBOSE=false
@@ -121,7 +129,7 @@ for test in "${tests[@]}"; do
     start_time=$(date +%s)
 
     if [ "$VERBOSE" = true ]; then
-        if timeout "$TIMEOUT" bash "$test_path"; then
+        if run_with_timeout "$TIMEOUT" bash "$test_path"; then
             end_time=$(date +%s)
             duration=$((end_time - start_time))
             echo ""
@@ -141,7 +149,7 @@ for test in "${tests[@]}"; do
         fi
     else
         # Capture output for non-verbose mode
-        if output=$(timeout "$TIMEOUT" bash "$test_path" 2>&1); then
+        if output=$(run_with_timeout "$TIMEOUT" bash "$test_path" 2>&1); then
             end_time=$(date +%s)
             duration=$((end_time - start_time))
             echo "  [PASS] (${duration}s)"

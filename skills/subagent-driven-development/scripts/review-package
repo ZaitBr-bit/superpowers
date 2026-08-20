@@ -17,7 +17,11 @@ if [ $# -eq 2 ]; then
   out=$2
 else
   dir=$("$(cd "$(dirname "$0")" && pwd)/sdd-workspace" "$plan")
-  out="$dir/review-working-tree-$(date +%s%N).diff"
+  # Segundos + PID, nao "date +%s%N": %N e extensao do GNU date. O date do BSD
+  # (macOS) repassa o formato ao strftime(3), que nao conhece %N e emite o "N"
+  # literal — o nome sairia como review-working-tree-1755640000N.diff. O PID
+  # devolve a unicidade que os nanossegundos davam.
+  out="$dir/review-working-tree-$(date +%s)-$$.diff"
 fi
 
 {

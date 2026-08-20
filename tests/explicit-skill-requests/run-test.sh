@@ -24,6 +24,16 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # Get the superpowers plugin root (two levels up)
 PLUGIN_DIR="$(cd "$SCRIPT_DIR/../.." && pwd)"
 
+# Resolvedor portavel de timeout: no macOS o binario e gtimeout, nao timeout.
+# shellcheck source=../lib/timeout.sh
+source "$PLUGIN_DIR/tests/lib/timeout.sh"
+
+# Aqui a falha precisa ser dura. A chamada do claude termina em "|| true", que
+# engoliria o exit 127 de um binario ausente: o log sairia vazio e o grep
+# adiante reportaria "Skill NOT triggered", culpando a skill por um problema
+# de ambiente. Falhar agora, com mensagem, e a unica leitura honesta.
+require_timeout_bin || exit 1
+
 TIMESTAMP=$(date +%s)
 OUTPUT_DIR="/tmp/superpowers-tests/${TIMESTAMP}/explicit-skill-requests/${SKILL_NAME}"
 mkdir -p "$OUTPUT_DIR"
@@ -68,7 +78,7 @@ echo "Running claude -p with explicit skill request..."
 echo "Prompt: $PROMPT"
 echo ""
 
-timeout 300 claude -p "$PROMPT" \
+run_with_timeout 300 claude -p "$PROMPT" \
     --plugin-dir "$PLUGIN_DIR" \
     --dangerously-skip-permissions \
     --max-turns "$MAX_TURNS" \

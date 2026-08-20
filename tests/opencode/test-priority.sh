@@ -9,6 +9,10 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 OPENCODE_TEST_TIMEOUT_SECONDS="${OPENCODE_TEST_TIMEOUT_SECONDS:-120}"
 
+# Resolvedor portavel de timeout: no macOS o binario e gtimeout, nao timeout.
+# shellcheck source=../lib/timeout.sh
+source "$SCRIPT_DIR/../lib/timeout.sh"
+
 echo "=== Test: Skill Priority Resolution ==="
 
 # Source setup to create isolated environment
@@ -107,7 +111,7 @@ run_opencode() {
     local exit_code
 
     set +e
-    command_output=$(cd "$dir" && timeout "${OPENCODE_TEST_TIMEOUT_SECONDS}s" opencode run --print-logs --format json "$prompt" 2>&1)
+    command_output=$(cd "$dir" && run_with_timeout "${OPENCODE_TEST_TIMEOUT_SECONDS}s" opencode run --print-logs --format json "$prompt" 2>&1)
     exit_code=$?
     set -e
 

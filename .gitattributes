@@ -1,6 +1,14 @@
 # Ensure shell scripts always have LF line endings
 *.sh text eol=lf
+*.py text eol=lf
 hooks/session-start text eol=lf
+
+# Extensionless executables. SKILL.md invokes these three directly (no "bash"
+# prefix), so a CR in the shebang is fatal on macOS and Linux:
+# "bad interpreter: /usr/bin/env bash^M". No extension rule above covers them.
+skills/subagent-driven-development/scripts/review-package text eol=lf
+skills/subagent-driven-development/scripts/sdd-workspace text eol=lf
+skills/subagent-driven-development/scripts/task-brief text eol=lf
 
 # Ensure the polyglot wrapper keeps LF (it's parsed by both cmd and bash)
 *.cmd text eol=lf
@@ -9,6 +17,7 @@ hooks/session-start text eol=lf
 *.md text eol=lf
 *.json text eol=lf
 *.js text eol=lf
+*.cjs text eol=lf
 *.mjs text eol=lf
 *.ts text eol=lf
 

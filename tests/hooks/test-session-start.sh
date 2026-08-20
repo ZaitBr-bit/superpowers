@@ -164,6 +164,30 @@ else
     fail "hooks.json registers SessionStart with shell:bash dispatch"
 fi
 
+# O hook do Cursor precisa da mesma disciplina, mas por outro motivo: o Cursor
+# executa a string por um shell POSIX, entao qualquer interpretador do Windows
+# (cmd, cmd.exe, powershell) sai com 127 no macOS e no Linux. Sem contexto
+# injetado, nenhuma skill auto-dispara na sessao inteira. Esta assercao existe
+# porque a forma "cmd /c ..." ja foi commitada uma vez sem ninguem perceber.
+if node -e '
+const hooks = JSON.parse(require("fs").readFileSync(process.argv[1], "utf8"));
+const entry = hooks.hooks.sessionStart[0];
+// A borda tem de ser inicio-de-string ou separador de comando, nunca \b: o
+// proprio alvo se chama "run-hook.cmd", e \b casaria com o sufixo do arquivo.
+if (/(^|[\s;&|])(cmd|cmd\.exe|powershell|powershell\.exe|pwsh)(\s|$)/i.test(entry.command)) {
+  console.error(`Cursor SessionStart command invokes a Windows interpreter: ${entry.command}`);
+  process.exit(1);
+}
+if (!/^\.\/hooks\/run-hook\.cmd session-start$/.test(entry.command)) {
+  console.error(`unexpected Cursor SessionStart command shape: ${entry.command}`);
+  process.exit(1);
+}
+' "$REPO_ROOT/hooks/hooks-cursor.json"; then
+    pass "hooks-cursor.json registers SessionStart without a Windows interpreter"
+else
+    fail "hooks-cursor.json registers SessionStart without a Windows interpreter"
+fi
+
 claude_home="$(make_home claude-code)"
 assert_command_output \
     "Claude Code emits nested SessionStart additionalContext" \

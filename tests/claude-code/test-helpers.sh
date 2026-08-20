@@ -1,6 +1,10 @@
 #!/usr/bin/env bash
 # Helper functions for Claude Code skill tests
 
+# Resolvedor portavel de timeout: no macOS o binario e gtimeout, nao timeout.
+# shellcheck source=../lib/timeout.sh
+source "$(cd "$(dirname "${BASH_SOURCE[0]}")/../lib" && pwd)/timeout.sh"
+
 # Run Claude Code with a prompt and capture output
 # Usage: run_claude "prompt text" [timeout_seconds] [allowed_tools]
 run_claude() {
@@ -16,7 +20,7 @@ run_claude() {
     fi
 
     # Run Claude in headless mode with timeout
-    if timeout "$timeout" "${cmd[@]}" > "$output_file" 2>&1; then
+    if run_with_timeout "$timeout" "${cmd[@]}" > "$output_file" 2>&1; then
         cat "$output_file"
         rm -f "$output_file"
         return 0
@@ -198,6 +202,7 @@ EOF
 }
 
 # Export functions for use in tests
+export -f run_with_timeout
 export -f run_claude
 export -f assert_contains
 export -f assert_not_contains

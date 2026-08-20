@@ -14,12 +14,16 @@ PASS=0; FAIL=0
 PIDS=()
 DIRS=()
 
+# O idioma "${arr[@]+"${arr[@]}"}" e obrigatorio aqui: em bash <= 4.3 — e o
+# macOS ainda traz o 3.2.57 — expandir um array vazio sob "set -u" aborta com
+# "unbound variable". O cleanup roda no trap EXIT, inclusive quando a saida
+# acontece antes de qualquer PID ou diretorio ser registrado.
 cleanup() {
-  for pid in "${PIDS[@]}"; do
+  for pid in ${PIDS[@]+"${PIDS[@]}"}; do
     kill -9 "$pid" 2>/dev/null || true
     wait "$pid" 2>/dev/null || true
   done
-  for dir in "${DIRS[@]}"; do
+  for dir in ${DIRS[@]+"${DIRS[@]}"}; do
     rm -rf "$dir"
   done
 }
@@ -31,10 +35,10 @@ untrack_pid() {
   local remove="$1"
   local kept=()
   local pid
-  for pid in "${PIDS[@]}"; do
+  for pid in ${PIDS[@]+"${PIDS[@]}"}; do
     [[ "$pid" == "$remove" ]] || kept+=("$pid")
   done
-  PIDS=("${kept[@]}")
+  PIDS=(${kept[@]+"${kept[@]}"})
 }
 new_server_id() {
   printf 'testid%026d\n' "$RANDOM"
