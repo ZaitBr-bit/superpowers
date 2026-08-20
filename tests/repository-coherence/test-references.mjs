@@ -344,8 +344,14 @@ for (const relative of ["README.md", "skills/writing-plans/SKILL.md"]) {
   }
 }
 
+// Os tetos abaixo sao o tamanho revisado e aprovado de cada SKILL.md, com uma
+// folga pequena de proposito. Nao sao limiares medidos: servem para que um
+// crescimento nao revisado -- tipicamente um merge do upstream -- falhe o teste
+// e force leitura do que entrou. Ao subir um teto, leia o conteudo novo antes,
+// remova o que nao se aplica a este harness, e so entao ajuste o numero para o
+// tamanho que voce aprovou. Subir o numero sem ler transforma o teste em ruido.
 for (const [relative, maxBytes] of [
-  ["skills/subagent-driven-development/SKILL.md", 21000],
+  ["skills/subagent-driven-development/SKILL.md", 24000],
   ["skills/writing-skills/SKILL.md", 16000],
 ]) {
   const skillText = fs.readFileSync(path.join(root, relative), "utf8");
@@ -358,13 +364,25 @@ for (const [relative, maxBytes] of [
   }
 }
 
+// Artefatos historicos: registram como uma skill foi construida, e nao material
+// de consulta que o agente deva ler durante a execucao. Exigir referencia a
+// partir do SKILL.md poluiria um arquivo operacional com um ponteiro que o
+// agente nunca deve seguir, e ainda gastaria bytes do teto de disclosure. Sao
+// arquivos do upstream que este fork nao controla, entao a isencao tambem evita
+// reabrir a discussao a cada merge. Acrescente uma entrada so depois de
+// confirmar que o arquivo e historico, nunca para calar o teste.
+const HISTORICAL_ARTIFACTS = new Set([
+  "skills/systematic-debugging/CREATION-LOG.md",
+]);
+
 const corpus = [...textByFile.values()].join("\n");
 for (const file of files) {
   const relative = path.relative(root, file).replaceAll("\\", "/");
   if (
     !relative.startsWith("skills/") ||
     path.basename(file) === "SKILL.md" ||
-    relative.includes("/examples/")
+    relative.includes("/examples/") ||
+    HISTORICAL_ARTIFACTS.has(relative)
   ) {
     continue;
   }

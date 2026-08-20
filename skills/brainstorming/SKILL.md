@@ -19,6 +19,16 @@ to EVERY task on EVERY path below — the ceremony scales with the task;
 the approval gate never does.
 </HARD-GATE>
 
+<VS-CODE-MANDATORY>
+**In VS Code, every approval gate on every path below MUST be asked via
+`vscode_askQuestions` — never inline in the chat.** This includes the two
+gates the lighter paths introduce: the spike's probe approval and the
+bounded path's design approval. Announcing your classification and
+presenting a design, findings, or options stays chat text; the decision
+itself is always a tool call. Never post a question in chat and stop to
+wait for an answer.
+</VS-CODE-MANDATORY>
+
 ## Three Paths
 
 Before your first question, classify the request and say the
@@ -29,7 +39,8 @@ override it:
 - **Spike** — a feasibility question ("can we...", "is it possible...",
   "quick and dirty is fine") whose output is an answer, not code you
   keep. Present the question and what you'll try in 2-3 sentences, get
-  a nod, then find out as cheaply as correctness allows. No design
+  the go-ahead (in VS Code, via `vscode_askQuestions`), then find out
+  as cheaply as correctness allows. No design
   doc, no spec file. Report findings as a recommendation; anything you
   built stays labeled throwaway.
 - **Bounded** — a well-scoped change to code that already exists in
@@ -38,7 +49,8 @@ override it:
   you are changing is already here to read. If there is no existing
   flow to change, the task is not bounded. Ask the clarifying
   questions that matter, present a short design IN CHAT (a few
-  sentences to a few short paragraphs), and STOP. Implementation
+  sentences to a few short paragraphs), then ask for approval — in VS
+  Code, via `vscode_askQuestions` — and STOP. Implementation
   starts only after your human partner says yes to that design — a
   bounded task's approval is as hard a gate as an architectural
   one. No spec file, no implementation plan document.
@@ -80,7 +92,7 @@ your path and complete them in order.
 **Spike:**
 1. **Explore project context** — enough to frame the probe
 2. **Present question + probe plan** — 2-3 sentences
-3. **Get approval** — a nod is enough
+3. **Get approval** — a nod is enough; in VS Code, ask for it via `vscode_askQuestions`
 4. **Investigate** — as cheaply as correctness allows
 5. **Report findings** — a recommendation; label anything built as throwaway
 
@@ -88,7 +100,7 @@ your path and complete them in order.
 1. **Explore project context** — check files, docs, recent commits
 2. **Ask clarifying questions** — one at a time, the ones that matter
 3. **Present short design in chat** — approach, files touched, testing
-4. **Get approval** — STOP and wait for an explicit yes; presenting the design and starting in the same breath is skipping the gate
+4. **Get approval** — in VS Code, ask via `vscode_askQuestions`; STOP and wait for an explicit yes; presenting the design and starting in the same breath is skipping the gate
 5. **Implement** — proceed with the normal development workflow (TDD applies); no plan document
 
 **Architectural:**
