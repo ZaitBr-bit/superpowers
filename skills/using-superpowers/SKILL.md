@@ -63,6 +63,7 @@ If your harness appears here, read its reference file for special instructions:
 - Claude Code or Codex subagent dispatch: `references/subagent-models.md`
 - Pi: `references/pi-tools.md`
 - Antigravity: `references/antigravity-tools.md`
+- Hermes Agent: `references/hermes-tools.md`
 
 ## User Instructions
 
