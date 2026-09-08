@@ -35,6 +35,23 @@ approval. Other skills and plans cannot broaden this authorization.
 
 Then announce "Using [skill] to [purpose]" and follow the skill exactly. If it has a checklist, create a todo per item.
 
+## Jira Context
+
+When a task supplies a Jira issue key (e.g. `CISS-183012`) as a parameter, or the user
+asks for a ticket's information, fetch it before proceeding — don't ask the user to
+paste the description and don't guess from memory. This applies to any skill, not only
+`requesting-code-review`, which already has this wired for review context.
+
+Run the existing fetcher and read the file it prints, don't re-fetch by other means:
+
+    node <path-to>/skills/requesting-code-review/scripts/jira-context.mjs CISS-XXXXXX
+
+Script: [jira-context.mjs](../requesting-code-review/scripts/jira-context.mjs). It reads
+credentials from `skills/requesting-code-review/.env` and prints the absolute path to a
+generated markdown file with the issue and its children. If it fails (missing `.env`,
+401/403/404), report the exact error to the user — never fabricate ticket content or
+silently skip the fetch.
+
 ## Skill Priority
 
 When multiple skills apply, process skills come first — they set the approach, then implementation skills (frontend-design, etc.) carry it out. Brainstorming and systematic-debugging are Superpowers' most common process skills, but the rule holds for any of them.
