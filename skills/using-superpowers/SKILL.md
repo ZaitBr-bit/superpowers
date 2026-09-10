@@ -42,7 +42,28 @@ asks for a ticket's information, fetch it before proceeding — don't ask the us
 paste the description and don't guess from memory. This applies to any skill, not only
 `requesting-code-review`, which already has this wired for review context.
 
-Run the existing fetcher and read the file it prints, don't re-fetch by other means:
+**Prefer the Atlassian MCP tools** (tool names starting with
+`mcp__claude_ai_Atlassian_Rovo__`):
+
+1. Call `getAccessibleAtlassianResources` once per session and keep the `cloudId` for
+   the Jira site that owns the issue (match by hostname when a link names one; when
+   only one resource comes back, use it).
+2. Call `getJiraIssue` with that `cloudId`, `issueIdOrKey` set to the key (e.g.
+   `CISS-183012`), and `fields: ["summary", "description", "issuetype", "status",
+   "priority", "assignee", "reporter", "fixVersions", "labels", "resolution",
+   "subtasks"]` — the tool's default field set omits `fixVersions` and `subtasks`,
+   both required below.
+3. For child issues (subtasks or Epic children), call `searchJiraIssuesUsingJql` with
+   the same `cloudId` and `jql: 'parent = "CISS-183012" ORDER BY key ASC'`.
+
+**If the MCP tools are not available in this session, or any call above fails**
+(resource not found, 401/403/404, tool errors out): STOP. Do not silently fall back
+and do not fabricate ticket content. Tell the user exactly what failed — tool
+unavailable, or which call errored and how — and ask whether to use the script
+fallback below or handle it another way (e.g. they paste the description). Only run
+the fallback after the user says to.
+
+**Fallback (only after the user chooses it):**
 
     node <path-to>/skills/requesting-code-review/scripts/jira-context.mjs CISS-XXXXXX
 
@@ -51,6 +72,31 @@ credentials from `skills/requesting-code-review/.env` and prints the absolute pa
 generated markdown file with the issue and its children. If it fails (missing `.env`,
 401/403/404), report the exact error to the user — never fabricate ticket content or
 silently skip the fetch.
+
+## GitLab Context
+
+When a task supplies a GitLab merge request or issue reference (a URL, or a
+`<project>!<iid>` / `<project>#<iid>` shorthand), fetch it before proceeding — don't
+ask the user to paste the description and don't guess from memory.
+
+**Prefer the GitLab MCP tools** (tool names starting with `mcp__gitlab__`):
+
+- Merge request: call `get_merge_request` with `id` (the project path, e.g.
+  `group/project`) and `merge_request_iid`. For the code changes, call
+  `get_merge_request_diffs` with the same `id`/`merge_request_iid`. This MCP
+  server has no tool to read a merge request's discussion notes/comments — if
+  those are needed, ask the user to paste them or check the GitLab UI.
+- Issue: call `get_issue` with `id` and `issue_iid`. For discussion/comments on
+  an issue, call `get_workitem_notes` with `project_id` (or `group_id`) and
+  `work_item_iid` set to the issue's IID — `get_workitem_notes` and
+  `create_workitem_note` operate on GitLab work items (issues, tasks, epics),
+  not merge requests.
+
+**If the MCP tools are not available in this session, or any call above fails**
+(project not found, insufficient scope, tool errors out): STOP. Do not fabricate
+content. Tell the user exactly what failed and ask them how to proceed — there is no
+script fallback for GitLab in this repo, so the choice is to authorize/fix the MCP or
+paste the merge request/issue description themselves.
 
 ## Skill Priority
 

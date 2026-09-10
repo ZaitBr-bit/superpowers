@@ -147,8 +147,14 @@ deve comunicar ao usuário:
 
 ## 5. Credenciais do Jira (opcional)
 
+Esta seção configura o **fallback manual** de acesso ao Jira via API REST direta. As
+skills preferem as ferramentas MCP do Atlassian (`mcp__claude_ai_Atlassian_Rovo__*`)
+quando disponíveis; se o MCP não estiver configurado ou uma chamada falhar, a skill
+para e avisa o usuário antes de usar este fallback — nunca troca de via sozinha.
+
 Só faça esta seção se o usuário for usar a skill `requesting-code-review` com chave
-de issue do Jira. Se ele não pediu, **pule e mencione que existe**.
+de issue do Jira **e** quiser ter esse fallback pronto de antemão. Se ele não pediu,
+**pule e mencione que existe**.
 
 ```bash
 cd "$REPO/skills/requesting-code-review"

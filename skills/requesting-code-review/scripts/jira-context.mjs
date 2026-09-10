@@ -2,6 +2,10 @@
 // Busca uma issue do Jira Cloud, suas subtarefas e suas issues filhas de Epic,
 // gerando um arquivo markdown de contexto para o subagente revisor de código.
 //
+// Caminho de fallback: as skills preferem as ferramentas MCP do Atlassian
+// (mcp__claude_ai_Atlassian_Rovo__*) quando disponíveis na sessão; este script
+// só é chamado quando esse MCP não está configurado.
+//
 // Uso:   node jira-context.mjs CISS-180745
 // Saída: imprime em stdout apenas o caminho absoluto do markdown gerado.
 

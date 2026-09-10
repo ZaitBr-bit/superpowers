@@ -202,4 +202,27 @@ You understand 1,2,3,6. Unclear on 4,5.
 
 ## GitHub Thread Replies
 
-When replying to inline review comments on GitHub, reply in the comment thread (`gh api repos/{owner}/{repo}/pulls/{pr}/comments/{id}/replies`), not as a top-level PR comment.
+When replying to inline review comments on GitHub, reply in the comment thread, not
+as a top-level PR comment.
+
+**Prefer the GitHub MCP tools** (tool names starting with
+`mcp__plugin_github_github__`): call `add_reply_to_pull_request_comment` with `owner`,
+`repo`, `pullNumber`, the numeric `commentId` (the number from the `#discussion_r<id>`
+anchor, not the GraphQL thread id `PRRT_...`), and `body`.
+
+**If the tool is not available in this session, or the call fails**: STOP. Tell the
+user what failed and ask whether to fall back to the CLI
+(`gh api repos/{owner}/{repo}/pulls/{pr}/comments/{id}/replies`) or handle it another
+way. Only run the fallback after the user says to.
+
+## GitLab Thread Replies
+
+When replying to inline review comments on a GitLab merge request, reply inside the
+existing discussion, not as a new top-level note.
+
+This MCP server (`mcp__gitlab__*`) has no tool that creates or reads merge request
+discussion notes: `create_workitem_note` and `get_workitem_notes` operate on GitLab
+work items (issues, tasks, epics), not merge requests, and no other tool in this
+server covers MR discussions. STOP: tell the user there is no MCP path for this, and
+ask them to post the reply manually in the GitLab UI — there is no CLI fallback
+documented for this repo either.

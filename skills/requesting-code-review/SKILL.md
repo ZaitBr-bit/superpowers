@@ -42,12 +42,11 @@ Pass the path, not the diff text. The diff stays out of the controller context.
 
 **1b. When a Jira issue key is supplied — gather demand context and scope the diff:**
 
-Both scripts live in this skill's `scripts/` directory and print a single path to stdout.
-Pass those paths onward, never their contents.
+`resolve-diff.sh` lives in this skill's `scripts/` directory and prints a single path
+to stdout. Pass that path onward, never its contents.
 
 ```bash
 SKILL=<this skill's base directory>
-JIRA_FILE=$(node "$SKILL/scripts/jira-context.mjs" CISS-180745)
 DIFF_FILE=$(bash "$SKILL/scripts/resolve-diff.sh" CISS-180745)
 ```
 
@@ -59,8 +58,21 @@ DIFF_FILE=$(bash "$SKILL/scripts/resolve-diff.sh" CISS-180745)
   review
 - `--diff-file <path>` — use a physical diff file as-is, for pre-merge review
 
-`jira-context.mjs` reads its credentials from `.env` in this skill's directory
-(see `.env.example`). Never pass the token through the conversation.
+Get the Jira context the same way described in
+[Jira Context](../using-superpowers/SKILL.md#jira-context) — prefer the
+`mcp__claude_ai_Atlassian_Rovo__*` tools; if they are unavailable in this session or a
+call fails, STOP and ask the user whether to fall back to `scripts/jira-context.mjs`
+(reads its credentials from `.env` in this skill's directory, see `.env.example`;
+never pass the token through the conversation) before running it. Either way, the
+issue's context ends up as markdown at
+`~/.claude/reviews/jira-CISS-180745.md` — when using the MCP path, write it there
+yourself (same fields as the script: summary, description, issuetype, status,
+priority, assignee, reporter, fixVersions, labels, resolution, subtasks/children);
+when using the script, it writes the file itself. Either way, set:
+
+```bash
+JIRA_FILE=~/.claude/reviews/jira-CISS-180745.md
+```
 
 Derive the changed-file list for the reviewer prompt from the diff itself — the
 result fills `{FILES_CHANGED}`:
@@ -72,8 +84,9 @@ grep '^diff --git' "$DIFF_FILE" | awk '{print $3}' | sed 's|^a/||' | sort -u
 Then dispatch as in step 2, setting `{PLAN_OR_REQUIREMENTS}` to `$JIRA_FILE` —
 a path, exactly as the template's "plan file path" usage intends.
 
-Either script exiting non-zero aborts the review. Do not dispatch a reviewer
-with an empty diff, or without the demand context that was requested.
+Failing to resolve the diff, or to gather the demand context when a Jira key was
+supplied, aborts the review. Do not dispatch a reviewer with an empty diff, or
+without the demand context that was requested.
 
 **1c. Decide the report path — the review report is a file, not a chat message:**
 
