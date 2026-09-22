@@ -84,7 +84,7 @@ sequences — the single most expensive failure observed. Track progress in
 a ledger file, not only in todos.
 
 - Each plan owns a workspace: at skill start, run this skill's
-  `scripts/sdd-workspace PLAN_FILE` — it prints the plan's git-ignored
+  `bash scripts/sdd-workspace PLAN_FILE` — it prints the plan's git-ignored
   directory (`<repo-root>/.superpowers/sdd/<plan-basename>/`), home to
   every artifact for THIS plan: ledger, briefs, reports, review packages.
   Another plan's directory is never yours to read or write.
@@ -172,7 +172,7 @@ Record `git status --short` before dispatching for diagnostics only. Do not
 stage or commit task changes.
 
 - **Task brief:** before dispatching an implementer, run this skill's
-  `scripts/task-brief PLAN_FILE N` — it extracts the task's full text to a
+  `bash scripts/task-brief PLAN_FILE N` — it extracts the task's full text to a
   uniquely named file and prints the path. Compose the dispatch so the
   brief stays the single source of
   requirements. Your dispatch should contain: (1) one line on where this
@@ -253,7 +253,7 @@ quality are both required. Implementer self-review does not replace this
 review.
 
 - Hand the reviewer the uncommitted working-tree diff as a file: run
-  `scripts/review-package PLAN_FILE` and pass the printed path. The package
+  `bash scripts/review-package PLAN_FILE` and pass the printed path. The package
   includes tracked and untracked changes without staging or committing them.
   The reviewer scopes its judgment to the task brief and report. Never dispatch
   a task reviewer without a diff file.
@@ -328,7 +328,7 @@ output; dispatch the re-review once all three are present. Name the
 covering test files in the fix message — a one-line fix does not need the
 whole suite.
 
-**The re-review is scoped.** Run `scripts/review-package PLAN_FILE` again and
+**The re-review is scoped.** Run `bash scripts/review-package PLAN_FILE` again and
 dispatch
 [re-review-prompt.md](re-review-prompt.md) with the findings list, the
 brief, report file, and fresh diff path. The re-reviewer verdicts
@@ -379,7 +379,7 @@ parked-with-ruling at the cap.
 ## Final Review
 
 The final whole-branch review gets a package too: run
-`scripts/review-package PLAN_FILE` and include the printed path in the final
+`bash scripts/review-package PLAN_FILE` and include the printed path in the final
 review dispatch, so the reviewer reads the complete uncommitted working tree
 without re-deriving it. Dispatch
 on the most capable available model (see Model Selection), using

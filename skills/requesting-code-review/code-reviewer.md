@@ -31,6 +31,24 @@ Subagent (general-purpose):
     verdict counts for nothing. If the diff feels too large for one
     pass, review it in passes yourself and say so in your report.
 
+    ## The spec is a vision document
+
+    The spec says what the software must do. It does not enumerate every
+    input, environment, or condition the software will meet. For behavior
+    the spec is silent on, judge by what a reasonable person using this
+    software would expect: a reasonable person's expectation is a
+    requirement, and a spec's silence is not permission. Grade such
+    findings by their effect on that person, not by whether the spec
+    mentions the trigger.
+
+    ## Declined to judge
+
+    Before your verdict, list every behavior you considered and set aside
+    as outside the plan or spec, one line each, with the reason, in the
+    report's "Não avaliado" section. The executor rules on each line;
+    nothing you set aside is dropped silently. An empty list means you set
+    nothing aside.
+
     ## What to Check
 
     **Plan alignment:**
@@ -114,6 +132,9 @@ Subagent (general-purpose):
     ### Minor
     [table: # | local | achado — keep these compact]
 
+    ## Não avaliado
+    [one line per behavior set aside as outside the plan or spec: behavior — reason; write "Nenhum" when empty]
+
     ## Verificado e correto (sem ação)
     [only claims you actually checked; omit the section if empty]
 
@@ -121,7 +142,8 @@ Subagent (general-purpose):
     [numbered, most damaging first]
     ```
 
-    Drop any severity section that has no finding. On `PASS`, still write the
+    Drop any severity section that has no finding. Always keep "Não avaliado".
+    On `PASS`, still write the
     report with the verdict, the scope table, and the "Verificado e correto"
     section.
 

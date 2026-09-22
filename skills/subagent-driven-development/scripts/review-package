@@ -16,7 +16,9 @@ plan=$1
 if [ $# -eq 2 ]; then
   out=$2
 else
-  dir=$("$(cd "$(dirname "$0")" && pwd)/sdd-workspace" "$plan")
+  # Chamado via bash: extratores de pacote (zipfile do Python) removem o bit
+  # de execução e a execução direta falharia com "Permission denied" (#2040).
+  dir=$("${BASH:-bash}" "$(cd "$(dirname "$0")" && pwd)/sdd-workspace" "$plan")
   # Segundos + PID, nao "date +%s%N": %N e extensao do GNU date. O date do BSD
   # (macOS) repassa o formato ao strftime(3), que nao conhece %N e emite o "N"
   # literal — o nome sairia como review-working-tree-1755640000N.diff. O PID
