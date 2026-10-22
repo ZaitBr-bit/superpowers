@@ -55,7 +55,7 @@ Framework designed to resist rationalization under pressure:
 ## Testing Approach
 
 Created 4 validation tests following
-[testing-skills-with-subagents.md](../writing-skills/testing-skills-with-subagents.md):
+[testing-skills-with-subagents.md](../writing-skills/references/testing-skills-with-subagents.md):
 
 ### [Test 1: Academic Context (No Pressure)](test-academic.md)
 - Simple bug, no time pressure

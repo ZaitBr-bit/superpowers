@@ -78,7 +78,7 @@ Derive the changed-file list for the reviewer prompt from the diff itself — th
 result fills `{FILES_CHANGED}`:
 
 ```bash
-grep '^diff --git' "$DIFF_FILE" | awk '{print $3}' | sed 's|^a/||' | sort -u
+grep '^diff --git' "$DIFF_FILE" | cut -d' ' -f3 | sed 's|^a/||' | sort -u
 ```
 
 Then dispatch as in step 2, setting `{PLAN_OR_REQUIREMENTS}` to `$JIRA_FILE` —

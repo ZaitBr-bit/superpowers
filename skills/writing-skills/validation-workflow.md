@@ -41,7 +41,7 @@ For wording changes, micro-test before full scenarios:
 - treat high variance as failure to bind behavior.
 
 For full pressure scenarios and subagent methodology, read
-[testing-skills-with-subagents.md](testing-skills-with-subagents.md).
+[references/testing-skills-with-subagents.md](references/testing-skills-with-subagents.md).
 
 ## Choose the Right Guidance Form
 
@@ -65,3 +65,6 @@ separate observable condition.
 
 Do not apply prohibition-heavy wording to an output-shaping problem; it often
 amplifies the unwanted behavior.
+
+For the full loophole-closing toolkit (spirit-vs-letter, rationalization table,
+red flags), read [references/bulletproofing.md](references/bulletproofing.md).

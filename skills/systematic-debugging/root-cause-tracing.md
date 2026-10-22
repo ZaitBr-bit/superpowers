@@ -86,7 +86,7 @@ async function gitInit(directory: string) {
 
 **Run and capture:**
 ```bash
-npm run test -- 2>&1 | grep 'DEBUG git init'
+npm test 2>&1 | grep 'DEBUG git init'
 ```
 
 **Analyze stack traces:**
@@ -101,7 +101,7 @@ If something appears during tests but you don't know which test:
 Use the bisection script `find-polluter.sh` in this directory:
 
 ```bash
-bash find-polluter.sh '.git' 'src/**/*.test.ts'
+bash ./find-polluter.sh '.git' 'src/**/*.test.ts'
 ```
 
 Runs tests one-by-one, stops at first polluter. See script for usage.

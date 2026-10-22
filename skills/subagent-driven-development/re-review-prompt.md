@@ -85,6 +85,6 @@ Subagent (general-purpose):
 - `[FINDINGS]` — the Critical/Important findings and spec gaps from the
   previous review, copied verbatim, one per bullet
 - `[REPORT_FILE]` — the implementer's report file (fix reports appended)
-- `[DIFF_FILE]` — the path `scripts/review-package PLAN_FILE` printed
+- `[DIFF_FILE]` — the path `bash scripts/review-package PLAN_FILE` printed
 
 **Re-reviewer returns:** `PASS`, or remaining findings and new breakage only

@@ -116,12 +116,10 @@ for (const line of geminiInstructions.split(/\r?\n/)) {
 }
 
 const dispatchTemplates = new Map([
-  ["skills/brainstorming/spec-document-reviewer-prompt.md", 4],
   ["skills/requesting-code-review/code-reviewer.md", 6],
   ["skills/subagent-driven-development/implementer-prompt.md", 12],
   ["skills/subagent-driven-development/re-review-prompt.md", 4],
   ["skills/subagent-driven-development/task-reviewer-prompt.md", 6],
-  ["skills/writing-plans/plan-document-reviewer-prompt.md", 4],
 ]);
 for (const [relative, maxTurns] of dispatchTemplates) {
   const text = fs.readFileSync(path.join(root, relative), "utf8");
@@ -140,11 +138,9 @@ for (const [relative, maxTurns] of dispatchTemplates) {
 }
 
 for (const relative of [
-  "skills/brainstorming/spec-document-reviewer-prompt.md",
   "skills/requesting-code-review/code-reviewer.md",
   "skills/subagent-driven-development/re-review-prompt.md",
   "skills/subagent-driven-development/task-reviewer-prompt.md",
-  "skills/writing-plans/plan-document-reviewer-prompt.md",
 ]) {
   const text = fs.readFileSync(path.join(root, relative), "utf8");
   if (!text.includes("`PASS`")) {
@@ -282,7 +278,9 @@ for (const requiredBehavior of [
   }
 }
 
+// Upstream removeu o CLAUDE.md (v6.4.2); só é checado se voltar a existir.
 for (const relative of ["AGENTS.md", "CLAUDE.md"]) {
+  if (relative !== "AGENTS.md" && !fs.existsSync(path.join(root, relative))) continue;
   const text = fs.readFileSync(path.join(root, relative), "utf8");
   for (const requiredPolicy of [
     "currently open branch and working directory",

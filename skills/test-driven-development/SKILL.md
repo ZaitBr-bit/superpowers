@@ -46,6 +46,12 @@ When writing or changing any test, read [writing-good-tests.md](writing-good-tes
 4. Refactor for clarity if the change can be made simpler.
 5. Stop once the behavior is understandable and the code is easy to review.
 
+**When you run tests, run the project's suite, not just your file.** A green
+run of the test you wrote is not a green suite. Before calling the change done,
+run the project's test command (`pytest`, `npm test`, `cargo test` — whatever
+the repo uses). Any failure that run shows — including one you didn't cause —
+goes in your report by name.
+
 For browser/UI behavior, the lightest available validation is a batched
 Playwright run, not step-by-step manual clicking through MCP tools.
 **REQUIRED SUB-SKILL:** Use superpowers:testing-with-playwright.

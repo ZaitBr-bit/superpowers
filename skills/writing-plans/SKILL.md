@@ -7,14 +7,15 @@ description: Use when you have a spec or requirements for a multi-step task, bef
 
 ## Overview
 
-Write comprehensive implementation plans assuming the engineer has zero context for our codebase and questionable taste. Document everything they need to know: which files to touch for each task, code, validation, docs they might need to check, how to validate it. Give them the whole plan as bite-sized tasks. DRY. YAGNI.
-
-Assume they are a skilled developer, but know almost nothing about our toolset or problem domain. Assume they don't know good validation design very well.
+Write implementation plans for an engineer who has not seen this codebase or this spec. Assume they write idiomatic code in the project's language once they know the exact interface and the exact validation, and that they will make a reasonable choice wherever the plan leaves one open. What they cannot know is what you decided: which files, which names and signatures, which values from the spec, which validation proves each task. Document those. Give them the whole plan as bite-sized tasks. DRY. YAGNI.
 
 **Announce at start:** "I'm using the writing-plans skill to create the implementation plan."
 
 **Context:** Execution stays in the currently open branch and directory.
 Mention a new branch or worktree only when the user explicitly requested one.
+Plans contain no commit, branch, or worktree steps unless the user explicitly
+requested that exact operation.
+
 **Save plans to:** `docs/superpowers/plans/YYYY-MM-DD-<feature-name>.md`
 - (User preferences for plan location override this default)
 
@@ -53,11 +54,11 @@ may promote it before completion.
 ## Browser/UI Validation Tasks
 
 When a task's Validate step exercises browser/UI behavior, plan the concrete
-Playwright scenario now — the full spec code, or the full ordered list of
-steps and assertions — instead of leaving discovery for execution time.
-**REQUIRED SUB-SKILL:** Use superpowers:testing-with-playwright to pick the
-execution path (CLI vs. batched MCP subagent) and write the scenario without
-placeholders, per the "No Placeholders" rule below.
+Playwright scenario now — the spec file with every step and assertion, or the
+full ordered list of steps and assertions — instead of leaving discovery for
+execution time. **REQUIRED SUB-SKILL:** Use superpowers:testing-with-playwright
+to pick the execution path (CLI vs. batched MCP subagent). The scenario is a
+validation step under "What a Step Contains" below: exact values, no gaps.
 
 ## GitLab CI/CD YAML Tasks
 
@@ -69,9 +70,9 @@ superpowers:verification-before-completion). List what the lint cannot
 confirm (variable-dependent `rules:`, image tool versions, artifact endpoints)
 as a post-merge check in the task, not as a silent assumption.
 
-## Bite-Sized Task Granularity
+## Step Granularity
 
-**Each step is one action (2-5 minutes):**
+**Each step is one action with a checkable result:**
 - "Implement the smallest useful change" - step
 - "Run a minimal reproduction or focused validation" - step
 - "Adjust the code until the validation is clean" - step
@@ -129,46 +130,52 @@ that owns the code, in that task's own step style.]
 - Modify: `exact/path/to/existing.py:123-145`
 - Validate: `scripts/exact/path/to/check.py`
 
-- [ ] **Step 1: Implement the smallest useful change**
-
 **Interfaces:**
 - Consumes: [what this task uses from earlier tasks — exact signatures]
 - Produces: [what later tasks rely on — exact function names, parameter
   and return types. A task's implementer sees only their own task; this
   block is how they learn the names and types neighboring tasks use.]
 
+- [ ] **Step 1: Implement `function(input: InputType) -> ResultType` in `exact/path/to/file.py`**
 
-```python
-def function(input):
-    return expected
-```
+One line on the approach when the signature and the validation leave a
+choice (which library call, which data structure); a code block only for an
+algorithm they do not determine.
 
 - [ ] **Step 2: Run a minimal reproduction or focused validation**
 
 Run: `python scripts/path/check.py`
-Expected: Confirm the current behavior or surface the issue clearly
+Expected: [the exact output that means the change works, with the spec's values]
 
-- [ ] **Step 3: Refine the implementation until validation is clean**
-
-```python
-def function(input):
-    return expected
-```
+- [ ] **Step 3: Adjust the code until the validation in Step 2 is clean**
 
 - [ ] **Step 4: Run lint, typecheck, build, or manual check**
 
 Run: `python -m compileall .`
 Expected: Clean output with exit code 0
+````
 
-## No Placeholders
+## What a Step Contains
 
-Every step must contain the actual content an engineer needs. These are **plan failures** — never write them:
-- "TBD", "TODO", "implement later", "fill in details"
-- "Add appropriate error handling" / "add validation" / "handle edge cases"
-- "Add validation for the above" (without concrete validation steps)
-- "Similar to Task N" (repeat the code — the engineer may be reading tasks out of order)
-- Steps that describe what to do without showing how (code blocks required for code steps)
-- References to types, functions, or methods not defined in any task
+A step is done when the implementer can write exactly one reasonable thing
+from it. That is the whole requirement: unambiguous, not complete. Each kind
+of step carries what makes it unambiguous and nothing more:
+
+- **A validation step:** the command or check to run, what it asserts (as
+  code when it is a test), with the spec's exact values in it, and the
+  output that means it passed.
+- **A code step:** the exact signature (name, parameters, return type), the
+  file it lives in, and the specific values the spec pins. The implementer
+  writes the body. A body appears only for an algorithm the signature and
+  validation do not determine, or for exact copy the spec fixes.
+- **A reference to another task:** that task's Interfaces block says what
+  to use; the plan does not repeat that task's code.
+
+A plan is the set of decisions the implementer cannot make alone. A plan
+longer than the code it describes has written the code instead. Lines that
+decide nothing ("TBD", "handle edge cases", "add appropriate validation",
+"add validation for the above", a type or function no task defines) are the
+opposite failure, and the self-review catches both.
 
 ## Self-Review
 
@@ -176,35 +183,50 @@ After writing the complete plan, look at the spec with fresh eyes and check the 
 
 **1. Spec coverage:** Skim each section/requirement in the spec. Can you point to a task that implements it? List any gaps.
 
-**2. Placeholder scan:** Search your plan for red flags — any of the patterns from the "No Placeholders" section above. Fix them.
+**2. Step scan:** Every step must let the implementer write exactly one reasonable thing, and no step may carry more than that: a line that decides nothing is a gap, a function body the signature and validation already determine is a transcript. Fix both.
 
 **3. Type consistency:** Do the types, method signatures, and property names you used in later tasks match what you defined in earlier tasks? A function called `clearLayers()` in Task 3 but `clearFullLayers()` in Task 7 is a bug.
 
 **4. Review Focus:** For each input class or failure mode the spec implies, is there a task whose validation exercises it? The five uncovered ones most likely to bite a person go in the Review Focus section, and each line there gets its validation added to the owning task. An empty section means you checked and found none, not that you skipped the check.
 
+**5. Proportion:** Compare the plan's length to the spec's. A plan several times longer than the spec it implements is a transcript of the program, not a plan. If code blocks are most of the document, replace bodies with signatures and validation assertions, and check that each step is still unambiguous.
+
 If you find issues, fix them inline. No need to re-review — just fix and move on. If you find a spec requirement with no task, add the task.
 
 ## Execution Handoff
 
-After saving the plan, offer execution choice:
+After saving and self-reviewing the plan, link it for your human partner
+to read. If they have already explicitly supplied an execution method, ask
+them to review the plan and confirm it captures what they want; wait for that
+review before implementation, then use the preserved method. Otherwise, ask
+them to review the plan and choose an execution method before implementation.
 
-**In VS Code — MANDATORY:** The execution choice MUST be asked via `vscode_askQuestions`, never inline in the chat. Never post the question as text and stop to wait — always use the tool.
+**In VS Code — MANDATORY:** The handoff question MUST be asked via `vscode_askQuestions`, never inline in the chat. Never post the question as text and stop to wait — always use the tool.
 
 **Decision logic — MANDATORY:**
-1. If the user has **already provided** an execution preference in the current context, **do not ask again**. Reuse that choice.
+1. If the user has **already provided** an execution preference in the current context, **do not ask for it again**. Reuse that choice and ask only for the plan review.
 2. If no explicit preference exists, compute the recommended default:
    - 1-2 mechanical tasks with clear requirements and limited file scope:
-     recommend Inline Execution. A subagent would cost more context than it saves.
+     recommend Native. A subagent would cost more context than it saves.
    - 3+ tasks, integration work, or tasks needing isolated context: recommend
-     Subagent-Driven.
+     Subagent-driven.
 3. Ask via `vscode_askQuestions`, placing the computed recommendation first.
-4. After a choice is known (new or reused), **continue immediately in the same turn** by invoking the selected execution skill and starting Task 1. Do not stop with messages like "if you want, I can continue".
+4. After the review is confirmed and a method is known (new or reused), **continue immediately in the same turn** by invoking the selected execution skill and starting Task 1. Do not stop with messages like "if you want, I can continue".
 5. Any follow-up question needed during execution must also use `vscode_askQuestions` (never inline chat questions).
+
+**When no execution method has already been supplied:**
+
+**"Plan complete and saved to `docs/superpowers/plans/<filename>.md`. Please review the plan. Which execution approach would you prefer?**
+
+- **Subagent-driven** - A fresh subagent implements each task and a fresh reviewer checks it before the next one starts, then a whole-branch review at the end. Most thorough; costs a fresh context per task and per review.
+- **Native** - I implement every task myself in this session, the way this harness runs work, then one fresh reviewer on the most capable model checks the whole branch. Cheapest and fastest; no independent review until the end. Runs well with a mid-tier session model, since the plan carries the design.
+
+**For this plan I recommend <one of the two>, because <one sentence from the plan: how much the tasks depend on each other's interfaces, how many there are, what a shipped mistake would cost>. Does the plan capture what you want, and which approach should we use?"**
 
 Example `vscode_askQuestions` call:
 ```
 header: "Execution approach"
-question: "Plan complete and saved to docs/superpowers/plans/<filename>.md. Which execution approach do you prefer?"
+question: "Plan complete and saved to docs/superpowers/plans/<filename>.md. Please review the plan. Does it capture what you want, and which execution approach do you prefer?"
 options:
   - label: "[Computed recommendation]"
     description: "[Why this plan's size and coupling fit this execution mode]"
@@ -213,17 +235,20 @@ options:
     description: "[Its trade-off for this plan]"
 ```
 
-**If Subagent-Driven chosen:**
+**When an execution method has already been supplied:**
+
+**"Plan complete and saved to `docs/superpowers/plans/<filename>.md`. Please review the plan. Does it capture what you want?"**
+
+**If Subagent-driven chosen:**
 - **REQUIRED SUB-SKILL:** Use superpowers:subagent-driven-development
 - Fresh subagent per task + risk-based task review + mandatory final review
 
 **Operational mapping (VS Code agent):**
-- "Subagent-Driven" means: invoke `runSubagent` immediately in the same turn with Task 1 scope.
+- "Subagent-driven" means: invoke `runSubagent` immediately in the same turn with Task 1 scope.
 - Do not stop after announcing choice; first subagent invocation must already be in-flight before ending turn.
 
-**If Inline Execution chosen:**
+**If Native chosen:**
 - **REQUIRED SUB-SKILL:** Use superpowers:executing-plans
-- Batch execution with checkpoints for review
 
 **Failure recovery rule:**
-- If execution choice was collected but no execution started, next response MUST auto-resume by starting Task 1 immediately (without re-asking execution preference).
+- If the review was confirmed and a method chosen but no execution started, next response MUST auto-resume by starting Task 1 immediately (without re-asking execution preference).
