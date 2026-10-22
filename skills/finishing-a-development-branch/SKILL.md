@@ -18,7 +18,8 @@ validate and hand off the current working tree."
 ## Step 1: Verify
 
 Run the project's appropriate focused checks, then lint, typecheck, or build
-when relevant. If validation fails, report the failures and stop.
+when relevant. If the change touches GitLab CI/CD YAML, run `glab ci lint` on
+it (see verification-before-completion for templates without `stages:`). If validation fails, report the failures and stop.
 
 ## Step 2: Inspect Read-Only State
 

@@ -59,6 +59,16 @@ steps and assertions — instead of leaving discovery for execution time.
 execution path (CLI vs. batched MCP subagent) and write the scenario without
 placeholders, per the "No Placeholders" rule below.
 
+## GitLab CI/CD YAML Tasks
+
+When a task creates or changes GitLab CI/CD YAML, its Validate step is
+`glab ci lint <file>` with the exact command and the expected output
+`CI/CD YAML is valid!`. If the file is an include-only template, plan the lint
+on a temporary copy with the includer's `stages:` prepended (see
+superpowers:verification-before-completion). List what the lint cannot
+confirm (variable-dependent `rules:`, image tool versions, artifact endpoints)
+as a post-merge check in the task, not as a silent assumption.
+
 ## Bite-Sized Task Granularity
 
 **Each step is one action (2-5 minutes):**

@@ -42,6 +42,7 @@ Skip any step = lying, not verifying
 | Validation passes | Relevant validation output: clean result / exit 0 | Previous run, "should pass" |
 | Linter clean | Linter output: 0 errors | Partial check, extrapolation |
 | Build succeeds | Build command: exit 0 | Linter passing, logs look good |
+| GitLab CI YAML valid | `glab ci lint <file>` output: `CI/CD YAML is valid!` | YAML parses, `yaml.safe_load` ok, "looks right" |
 | Bug fixed | Original symptom rechecked with minimal reproduction or focused validation | Code changed, assumed fixed |
 | Regression validated | Original symptom no longer appears after the fix | One-off confirmation without rechecking |
 | Agent completed | VCS diff shows changes | Agent reports "success" |
@@ -78,6 +79,17 @@ Skip any step = lying, not verifying
 ✅ [Run the relevant validation] [See: clean output / exit 0] "Validation passes"
 ❌ "Should pass now" / "Looks correct"
 ```
+
+**GitLab CI/CD YAML (any `.gitlab-ci.yml` or included template changed):**
+```
+✅ glab ci lint <file> → "CI/CD YAML is valid!" → "Lint passes"
+❌ yaml.safe_load OK → "pipeline is valid" (parsing is not GitLab validation)
+```
+- `glab` must be installed and authenticated against the project's host (`glab auth status`; login is the user's step: `glab auth login --hostname <host>`). Never ask for or handle the token in chat.
+- Right after an install the shell PATH may be stale: look for the binary (Windows: `%LOCALAPPDATA%\Programs\glab\glab.exe`) before concluding it is missing.
+- A template meant to be included (no `stages:`) fails lint on its own. Lint a **temporary copy** (scratchpad) with the includer's `stages:` list prepended; never edit the real file just to satisfy the lint.
+- The lint checks syntax, `rules:`, `needs`, `extends`. It does NOT evaluate variables such as `$CI_PROJECT_PATH`, tool versions inside the job image, or artifact endpoints: list those as pending until a real pipeline run.
+- If `glab` is missing or not authenticated, report "GitLab CI lint NOT run" — do not claim the YAML is valid.
 
 **Regression validation:**
 ```

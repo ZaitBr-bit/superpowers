@@ -310,6 +310,7 @@ Superpowers is built by [Jesse Vincent](https://blog.fsck.com) and the rest of t
 **Meta**
 - **writing-skills** - Create new skills following best practices (includes testing methodology)
 - **using-superpowers** - Introduction to the skills system
+- **using-helper-tools** - Where to install missing Python packages and CLI tools (persistent, git-ignored `.superpowers/tools/`) and how to show visual results to the user
 
 ## Philosophy
 
