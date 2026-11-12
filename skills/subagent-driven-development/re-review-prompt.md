@@ -86,5 +86,6 @@ Subagent (general-purpose):
   previous review, copied verbatim, one per bullet
 - `[REPORT_FILE]` — the implementer's report file (fix reports appended)
 - `[DIFF_FILE]` — the path `bash scripts/review-package PLAN_FILE` printed
+  (run by its absolute path, from the working tree you're executing in)
 
 **Re-reviewer returns:** `PASS`, or remaining findings and new breakage only

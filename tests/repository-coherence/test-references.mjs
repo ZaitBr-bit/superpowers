@@ -269,8 +269,8 @@ const reviewPackage = fs.readFileSync(
   "utf8",
 );
 for (const requiredBehavior of [
-  "git diff -U10 HEAD",
-  "git ls-files --others --exclude-standard -z",
+  "diff -U10 HEAD",
+  "ls-files --others --exclude-standard -z",
   "git diff --no-index",
 ]) {
   if (!reviewPackage.includes(requiredBehavior)) {

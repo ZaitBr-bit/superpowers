@@ -42,6 +42,7 @@ covering test files in the fix message — a one-line fix does not need the
 whole suite.
 
 **The re-review is scoped.** Run `bash scripts/review-package PLAN_FILE`
+by its absolute path, from the working tree you're executing in,
 again for a fresh working-tree package, and dispatch
 [re-review-prompt.md](../re-review-prompt.md) with the findings list, the
 brief, the report file, and the printed diff path. The re-reviewer verdicts

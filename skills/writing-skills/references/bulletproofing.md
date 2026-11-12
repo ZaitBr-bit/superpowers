@@ -5,7 +5,7 @@ discipline failure: the agent knows the rule and skips it under pressure.
 
 ## Bulletproofing Skills Against Rationalization
 
-Skills that enforce discipline (like TDD) need to resist rationalization. Agents are smart and will find loopholes when under pressure.
+Skills that enforce discipline (like validating before claiming done) need to resist rationalization. Agents are smart and will find loopholes when under pressure.
 
 **Scope:** this toolkit is for discipline failures — an agent that knows the rule and skips it under pressure. For wrong-shaped output or omitted elements, prohibition-based bulletproofing backfires; use the forms in "Choose the Right Guidance Form" in [../validation-workflow.md](../validation-workflow.md) instead.
 
@@ -17,19 +17,19 @@ Don't just state the rule - forbid specific workarounds:
 
 <Bad>
 ```markdown
-Write code before test? Delete it.
+Claim done before validating? Run the validation first.
 ```
 </Bad>
 
 <Good>
 ```markdown
-Write code before test? Delete it. Start over.
+Claim done before validating? Run the validation first. Start over the claim.
 
 **No exceptions:**
-- Don't keep it as "reference"
-- Don't "adapt" it while writing tests
-- Don't look at it
-- Delete means delete
+- Don't reuse an earlier run as the result
+- Don't validate a different command than the one the task names
+- Don't skim the output
+- Run means run, then read
 ```
 </Good>
 
@@ -50,9 +50,9 @@ Capture rationalizations from baseline testing (see Testing section below). Ever
 ```markdown
 | Excuse | Reality |
 |--------|---------|
-| "Too simple to test" | Simple code breaks. Test takes 30 seconds. |
-| "I'll test after" | Tests passing immediately prove nothing. |
-| "Tests after achieve same goals" | Tests-after = "what does this do?" Tests-first = "what should this do?" |
+| "Too simple to validate" | Simple code breaks. The validation takes 30 seconds. |
+| "I'll validate at the end" | Late failures cost a whole task of rework. |
+| "It compiled, so it works" | Compiling proves syntax, not behavior. |
 ```
 
 ### Create Red Flags List
@@ -62,13 +62,13 @@ Make it easy for agents to self-check when rationalizing:
 ```markdown
 ## Red Flags - STOP and Start Over
 
-- Code before test
-- "I already manually tested it"
-- "Tests after achieve the same purpose"
+- Done claimed before the validation ran
+- "I already checked it manually"
+- "An earlier run counts"
 - "It's about spirit not ritual"
 - "This is different because..."
 
-**All of these mean: Delete code. Start over with TDD.**
+**All of these mean: Run the validation and read the output before claiming done.**
 ```
 
 ### Update SDO for Violation Symptoms
@@ -76,5 +76,5 @@ Make it easy for agents to self-check when rationalizing:
 Add to description: symptoms of when you're ABOUT to violate the rule:
 
 ```yaml
-description: use when implementing any feature or bugfix, before writing implementation code
+description: use when about to claim a task is complete, before reporting it
 ```

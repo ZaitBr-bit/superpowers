@@ -126,7 +126,8 @@ The workspace and ledger are shared with superpowers:subagent-driven-development
 and the new one resumes from the same ledger.
 
 - Each plan owns a workspace: at skill start, run
-  `../subagent-driven-development/scripts/sdd-workspace PLAN_FILE` — it
+  `../subagent-driven-development/scripts/sdd-workspace PLAN_FILE` by its
+  absolute path, from the working tree you're executing in — it
   prints the plan's git-ignored directory
   (`<repo-root>/.superpowers/sdd/<plan-basename>/`), home to every
   artifact for THIS plan: ledger, briefs, review packages. Another plan's
@@ -172,7 +173,8 @@ file in the workspace and read its tail; read a brief, not the whole plan.
 
 ### 1. Take the task
 
-- Run this skill's `scripts/task-start PLAN_FILE N`. It prints the brief
+- Run this skill's `scripts/task-start PLAN_FILE N` by its absolute
+  path, from the working tree you're executing in. It prints the brief
   path and BASE (the current HEAD) in one call. Read the brief for every
   task, including ones you remember from setup: what you remember is a
   summary, the brief has the exact values, signatures, and validation.
@@ -225,19 +227,19 @@ the claim. If any item is missing, the task is not complete: finish it.
 ### 4. Complete the task
 
 Run this skill's `scripts/task-done PLAN_FILE N BASE -- <validation command>`
-with the validation command the brief names for the whole task. It runs the
+by its absolute path, from the working tree you're executing in, with the validation command the brief names for the whole task. It runs the
 command, keeps the full output in the workspace, prints the tail, and — only
 if it passes — appends the completion line to the ledger:
 
-`Task <N>: complete (commits <base7>..<head7>, tests: <command> → <result>)`
+`Task <N>: complete (validation: <command> → <result>)`
 
-Without commits the range shows the same SHA twice; the working tree holds
-the changes. A failing run records nothing; the task is not complete. When
+The working tree holds the changes; the line records no commit range. A failing run records nothing; the task is not complete. When
 it records, mark the todo complete and take the next task.
 
 ## Final Review
 
 Run `bash ../subagent-driven-development/scripts/review-package PLAN_FILE`
+by its absolute path, from the working tree you're executing in,
 and review from the file it prints: it packages the current uncommitted
 working tree, tracked and untracked, without staging anything.
 

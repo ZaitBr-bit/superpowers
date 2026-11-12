@@ -1,28 +1,34 @@
 #!/usr/bin/env bash
 # Package the current uncommitted working-tree diff for read-only review.
 #
-# Usage: review-package PLAN_FILE [OUTFILE]
+# Usage: review-package [-C DIR] PLAN_FILE [OUTFILE]
 # The package includes tracked changes and complete diffs for untracked files.
+# The repository is the one sdd-repo names; -C DIR runs as if started in DIR.
 set -euo pipefail
 
+here=$(cd "$(dirname "$0")" && pwd)
+if [ "${1:-}" = "-C" ]; then
+  [ -d "${2:-}" ] || { echo "bad -C directory: ${2:-}" >&2; exit 2; }
+  cd "$2"
+  shift 2
+fi
+
 if [ $# -lt 1 ] || [ $# -gt 2 ]; then
-  echo "usage: review-package PLAN_FILE [OUTFILE]" >&2
+  echo "usage: review-package [-C DIR] PLAN_FILE [OUTFILE]" >&2
   exit 2
 fi
 
 plan=$1
 [ -f "$plan" ] || { echo "no such plan file: $plan" >&2; exit 2; }
 
+# Chamado via bash: extratores de pacote removem o bit de execução (#2040).
+repo=$("${BASH:-bash}" "$here/sdd-repo" --with-commit)
+
 if [ $# -eq 2 ]; then
   out=$2
 else
-  # Chamado via bash: extratores de pacote (zipfile do Python) removem o bit
-  # de execução e a execução direta falharia com "Permission denied" (#2040).
-  dir=$("${BASH:-bash}" "$(cd "$(dirname "$0")" && pwd)/sdd-workspace" "$plan")
-  # Segundos + PID, nao "date +%s%N": %N e extensao do GNU date. O date do BSD
-  # (macOS) repassa o formato ao strftime(3), que nao conhece %N e emite o "N"
-  # literal — o nome sairia como review-working-tree-1755640000N.diff. O PID
-  # devolve a unicidade que os nanossegundos davam.
+  dir=$("${BASH:-bash}" "$here/sdd-workspace" "$plan")
+  # Segundos + PID: "date +%s%N" não existe no date do BSD (macOS).
   out="$dir/review-working-tree-$(date +%s)-$$.diff"
 fi
 
@@ -30,16 +36,16 @@ fi
   echo "# Review package: current uncommitted working tree"
   echo
   echo "## Status"
-  git status --short
+  git -C "$repo" status --short
   echo
   echo "## Tracked changes"
-  git diff --stat HEAD
-  git diff -U10 HEAD
+  git -C "$repo" diff --stat HEAD
+  git -C "$repo" diff -U10 HEAD
   while IFS= read -r -d '' file; do
     echo
     echo "## Untracked file: $file"
-    git diff --no-index -- /dev/null "$file" || [ $? -eq 1 ]
-  done < <(git ls-files --others --exclude-standard -z)
+    (cd "$repo" && git diff --no-index -- /dev/null "$file") || [ $? -eq 1 ]
+  done < <(git -C "$repo" ls-files --others --exclude-standard -z)
 } > "$out"
 
 echo "wrote ${out}: $(wc -c < "$out" | tr -d ' ') bytes"
